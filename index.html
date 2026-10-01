@@ -1,0 +1,4393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>ACE 2 Pro — Command Deck & Hardware Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --bg-card: rgba(18, 23, 37, 0.75);
+      --bg-card-border: rgba(255, 255, 255, 0.08);
+      --bg-card-hover: rgba(26, 33, 53, 0.9);
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    select option {
+      background-color: #121725 !important;
+      color: #f3f4f6 !important;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.10) 0%, transparent 40%),
+        linear-gradient(180deg, #090c13 0%, #0d121d 100%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100%;
+      box-sizing: border-box;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Top Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.2px;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--bg-card-border);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 20px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.25s ease;
+      border-radius: 20px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: #94a3b8;
+      transition: all 0.25s ease;
+      border-radius: 50%;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #6366f1;
+      border-color: #818cf8;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(18px);
+      background-color: #ffffff;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--accent-emerald);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--bg-card-border);
+      padding-bottom: 12px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Lanes Section */
+    .lanes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .lanes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .lane-card {
+      background: rgba(15, 20, 32, 0.85);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      transition: all 0.25s ease;
+      min-height: 410px;
+      min-width: 0;
+      width: 100%;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .lane-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .lane-card.active-feed {
+      border-color: var(--accent-emerald);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .lane-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+
+
+    .lane-badge {
+
+      font-family: var(--font-display);
+
+      font-weight: 800;
+
+      font-size: 13px;
+
+      background: rgba(255, 255, 255, 0.06);
+
+      padding: 4px 8px;
+
+      border-radius: var(--radius-sm);
+
+    }
+
+
+
+    .lane-status {
+
+      font-size: 11px;
+
+      font-weight: 600;
+
+      font-family: var(--font-mono);
+
+      text-transform: uppercase;
+
+      padding: 2px 6px;
+
+      border-radius: 4px;
+
+    }
+
+
+
+    .lane-status.ready { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+    .lane-status.empty { background: rgba(156, 163, 175, 0.15); color: var(--text-muted); }
+
+    .lane-status.scan { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+
+
+
+    /* Spool Visual */
+
+    .spool-visual {
+
+      height: 90px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      position: relative;
+
+    }
+
+
+
+    .spool-circle {
+
+      width: 72px;
+
+      height: 72px;
+
+      border-radius: 50%;
+
+      border: 4px solid #1f293d;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      position: relative;
+
+      transition: all 0.3s ease;
+
+    }
+
+
+
+    .spool-inner {
+
+      width: 34px;
+
+      height: 34px;
+
+      border-radius: 50%;
+
+      background: #0f1420;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      font-family: var(--font-mono);
+
+      font-size: 10px;
+
+      font-weight: 600;
+
+      color: var(--text-muted);
+
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
+
+    }
+
+
+
+    .spool-color-glow {
+
+      position: absolute;
+
+      width: 60px;
+
+      height: 60px;
+
+      border-radius: 50%;
+
+      filter: blur(14px);
+
+      opacity: 0.45;
+
+      z-index: 0;
+
+      transition: all 0.3s ease;
+
+    }
+
+
+
+    .spool-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: auto;
+      justify-content: center;
+      min-width: 0;
+      overflow: visible;
+    }
+
+    .spool-material {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 13.5px;
+      white-space: normal;
+      word-break: break-word;
+      color: var(--text-main);
+    }
+
+    .spool-sku {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      line-height: 1.35;
+      display: block;
+    }
+
+    .spool-temp {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: normal;
+      word-break: break-word;
+    }
+
+
+
+    /* Per-Spool Filament Path Track */
+    .lane-path-track {
+      background: rgba(13, 17, 28, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 4px 0 8px 0;
+      min-width: 0;
+    }
+
+    .path-track-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      min-width: 0;
+    }
+
+    .path-track-title {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .path-track-pos {
+      color: var(--accent-cyan);
+      font-weight: 600;
+      font-size: 9.5px;
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      line-height: 1.3;
+      background: rgba(6, 182, 212, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      max-width: 100%;
+    }
+
+    .path-visual-track {
+      position: relative;
+      padding: 6px 0 16px 0;
+    }
+
+    .path-tube-bg {
+      position: relative;
+      height: 6px;
+      background: #1e2738;
+      border-radius: 3px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+      overflow: visible;
+    }
+
+    .path-filament-strand {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease, background 0.3s ease;
+      width: 0%;
+    }
+
+    .path-filament-tip {
+      position: absolute;
+      right: -3px;
+      top: -3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: inherit;
+      box-shadow: 0 0 10px currentColor;
+      border: 2px solid #fff;
+      animation: tipGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes tipGlow {
+      0%, 100% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+
+    .path-nodes-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 2px;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .path-node {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transform: translateX(-50%);
+    }
+
+    .path-node.gate {
+      left: 0%;
+      transform: translateX(0%);
+      align-items: flex-start;
+    }
+
+    .path-node.park {
+      left: 36%;
+      transform: translateX(-50%);
+    }
+
+    .path-node.hub {
+      left: 52%;
+      transform: translateX(-50%);
+    }
+
+    .path-node.entry {
+      left: 78%;
+      transform: translateX(-50%);
+    }
+
+    .path-node.postgear {
+      left: 100%;
+      transform: translateX(-100%);
+      align-items: flex-end;
+    }
+
+    .node-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1f293d;
+      border: 2px solid #334155;
+      transition: all 0.3s ease;
+    }
+
+    .path-node.active .node-dot {
+      background: var(--accent-emerald);
+      border-color: #a7f3d0;
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    .path-node.park.active .node-dot {
+      background: var(--accent-amber);
+      border-color: #fde68a;
+      box-shadow: 0 0 8px var(--accent-amber);
+    }
+
+    .node-label {
+      font-size: 8px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .path-node.active .node-label {
+      color: var(--text-main);
+    }
+
+    @keyframes nodePulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 6px var(--accent-amber); }
+      50% { transform: scale(1.6); box-shadow: 0 0 16px var(--accent-amber), 0 0 24px rgba(245, 158, 11, 0.6); }
+    }
+
+    .path-node.pulse-active .node-dot {
+      background: var(--accent-amber) !important;
+      border-color: #fef08a !important;
+      animation: nodePulse 0.8s infinite ease-in-out !important;
+    }
+
+    .path-node.pulse-active .node-label {
+      color: #fde047 !important;
+      font-weight: 800;
+      text-shadow: 0 0 8px rgba(253, 224, 71, 0.6);
+    }
+
+    .path-track-pos.calibrating {
+      color: #fde047 !important;
+      font-weight: 800 !important;
+      animation: blink 1.2s infinite ease-in-out;
+    }
+
+    .path-track-pos.calibrated {
+      color: var(--accent-emerald) !important;
+      font-weight: 800 !important;
+    }
+
+    .btn-micro:hover {
+      border-color: rgba(148, 163, 184, 0.6) !important;
+      color: #fff !important;
+    }
+
+    .lane-status.calibrating {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fde047;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      animation: blink 1.2s infinite ease-in-out;
+    }
+
+    .lane-status.loading {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      animation: blink 1s infinite ease-in-out;
+    }
+
+    .lane-status.warning {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      animation: blink 1s infinite ease-in-out;
+    }
+
+    .lane-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: auto;
+    }
+
+
+
+    .btn {
+
+      background: rgba(255, 255, 255, 0.05);
+
+      border: 1px solid var(--bg-card-border);
+
+      color: var(--text-main);
+
+      padding: 7px 10px;
+
+      border-radius: var(--radius-sm);
+
+      font-size: 12px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 6px;
+
+      transition: all 0.2s ease;
+
+    }
+
+
+
+    .btn:hover:not(:disabled) {
+
+      background: rgba(255, 255, 255, 0.12);
+
+      border-color: rgba(255, 255, 255, 0.2);
+
+    }
+
+
+
+    .btn-primary {
+
+      background: var(--primary);
+
+      border-color: var(--primary);
+
+      color: #fff;
+
+    }
+
+
+
+    .btn-primary:hover:not(:disabled) {
+
+      background: #4f46e5;
+
+      box-shadow: 0 0 12px var(--primary-glow);
+
+    }
+
+
+
+    .btn-danger {
+
+      background: rgba(244, 63, 94, 0.12);
+
+      border-color: rgba(244, 63, 94, 0.3);
+
+      color: var(--accent-rose);
+
+    }
+
+
+
+    .btn-danger:hover:not(:disabled) {
+
+      background: var(--accent-rose);
+
+      color: #fff;
+
+    }
+
+
+
+    .btn-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.35);
+      color: var(--accent-amber);
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: var(--accent-amber);
+      color: #000;
+    }
+
+    /* Thermal Chamber & Active Roast Deck */
+    .roast-card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(20, 26, 43, 0.95) 0%, rgba(13, 17, 28, 0.98) 100%);
+      border: 1px solid rgba(249, 115, 22, 0.25);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .roast-card.active-roast {
+      border-color: rgba(249, 115, 22, 0.5);
+      box-shadow: 0 0 25px rgba(249, 115, 22, 0.15), 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .roast-card.active-heat {
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.12), 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .roast-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .roast-badge.active {
+      background: rgba(249, 115, 22, 0.15);
+      color: #fb923c;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+    }
+
+    .roast-badge.heating {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .roast-badge.idle {
+      background: rgba(156, 163, 175, 0.1);
+      color: var(--text-muted);
+      border: 1px solid rgba(156, 163, 175, 0.2);
+    }
+
+    .pulse-dot.amber {
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f97316;
+      box-shadow: 0 0 8px #f97316;
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+
+    .idle-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 12px #f97316; }
+    }
+
+    .roast-stage {
+      position: relative;
+      background: radial-gradient(ellipse at bottom, rgba(249, 115, 22, 0.12) 0%, rgba(13, 17, 28, 0.8) 75%);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .roast-stage.heating {
+      background: radial-gradient(ellipse at bottom, rgba(249, 115, 22, 0.26) 0%, rgba(13, 17, 28, 0.85) 75%);
+      border-color: rgba(249, 115, 22, 0.45);
+      box-shadow: inset 0 0 16px rgba(249, 115, 22, 0.12);
+    }
+
+    .thermal-convection-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.25;
+      transition: opacity 0.5s ease;
+      z-index: 1;
+    }
+
+    .roast-stage.heating .thermal-convection-layer {
+      opacity: 0.85;
+    }
+
+    .heat-wave {
+      animation: waveFloat 3.2s infinite ease-in-out;
+      transform-origin: center bottom;
+    }
+
+    .heat-wave:nth-child(2) {
+      animation-delay: 1.1s;
+      animation-duration: 3.8s;
+    }
+
+    .heat-wave:nth-child(3) {
+      animation-delay: 2.2s;
+      animation-duration: 4.2s;
+    }
+
+    @keyframes waveFloat {
+      0% { transform: translateY(6px) scaleY(0.9); opacity: 0.25; }
+      50% { transform: translateY(-4px) scaleY(1.1); opacity: 0.8; }
+      100% { transform: translateY(-12px) scaleY(0.85); opacity: 0.15; }
+    }
+
+    .roast-stage-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .roast-stage-status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      letter-spacing: 0.4px;
+      transition: all 0.3s ease;
+    }
+
+    /* Lane Card Roast / Dry Toggle */
+    .lane-roast-toggle {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lane-roast-toggle input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
+    }
+
+    .lane-roast-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      transition: all 0.2s ease;
+    }
+
+    .lane-roast-pill svg {
+      stroke: currentColor;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .lane-roast-toggle:hover .lane-roast-pill {
+      border-color: rgba(249, 115, 22, 0.4);
+      color: #fdba74;
+    }
+
+    .lane-roast-toggle input[type="checkbox"]:checked + .lane-roast-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+      box-shadow: none;
+    }
+
+    .lane-roast-toggle input[type="checkbox"]:checked + .lane-roast-pill svg {
+      color: var(--text-muted);
+    }
+
+    .lane-roast-pill.status-roast {
+      background: rgba(249, 115, 22, 0.25) !important;
+      border-color: rgba(249, 115, 22, 0.65) !important;
+      color: #ffedd5 !important;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.4) !important;
+    }
+
+    .lane-roast-pill.status-roast svg {
+      color: #f97316 !important;
+    }
+
+    .lane-roast-pill.status-heating {
+      background: rgba(245, 158, 11, 0.18) !important;
+      border-color: rgba(245, 158, 11, 0.45) !important;
+      color: #fbbf24 !important;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
+    }
+
+    .lane-roast-pill.status-heating svg {
+      color: #f59e0b !important;
+    }
+
+    .lane-roast-pill.status-pending {
+      background: rgba(251, 191, 36, 0.2) !important;
+      border-color: rgba(251, 191, 36, 0.4) !important;
+      color: #fbbf24 !important;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.2) !important;
+    }
+
+    .lane-roast-pill.status-pending svg {
+      color: #fbbf24 !important;
+    }
+
+    .lane-roast-pill.status-stationary {
+      background: rgba(255, 255, 255, 0.04) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: var(--text-muted) !important;
+      box-shadow: none !important;
+    }
+
+    .lane-roast-pill.status-stationary svg {
+      color: var(--text-muted) !important;
+    }
+
+    .lane-card.roast-active {
+      border-color: rgba(249, 115, 22, 0.45);
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.15);
+    }
+
+    @keyframes spoolSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spoolSpinRev {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    .spool-circle.spinning-fwd {
+      animation: spoolSpin 4s linear infinite;
+    }
+
+    .spool-circle.spinning-rev {
+      animation: spoolSpinRev 4s linear infinite;
+    }
+
+    .spool-circle.spinning-fwd .spool-inner {
+      animation: spoolSpinRev 4s linear infinite;
+    }
+
+    .spool-circle.spinning-rev .spool-inner {
+      animation: spoolSpin 4s linear infinite;
+    }
+
+    .path-filament-strand.active-sweep {
+      box-shadow: 0 0 14px currentColor, 0 0 24px var(--primary-glow) !important;
+    }
+
+    .path-filament-strand.active-sweep .path-filament-tip {
+      transform: scale(1.3);
+      box-shadow: 0 0 16px #60a5fa, 0 0 28px #818cf8;
+      border-color: #ffffff;
+      animation: sweepTipPulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes sweepTipPulse {
+      0% { transform: scale(1.1); filter: brightness(1); }
+      100% { transform: scale(1.4); filter: brightness(1.4); }
+    }
+
+
+    /* Roast Metrics 3-Col */
+    .roast-metrics-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .roast-metrics-3col .metric-box {
+      padding: 10px 12px;
+    }
+
+    .roast-metrics-3col .metric-val {
+      font-size: 18px;
+    }
+
+    .metric-box {
+      background: rgba(13, 17, 28, 0.85);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-val {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .metric-val.temp { color: var(--accent-amber); }
+    .metric-val.humidity { color: var(--accent-cyan); }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .roast-presets-title {
+      font-size: 11px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .roast-preset-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .roast-preset-pill {
+      font-size: 10px;
+      padding: 6px 4px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .roast-preset-pill:hover {
+      background: rgba(249, 115, 22, 0.15);
+      border-color: rgba(249, 115, 22, 0.35);
+      color: #fb923c;
+    }
+
+    .roast-custom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .roast-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .roast-input-group label {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .roast-input-group input,
+    .roast-input-group select {
+      background: rgba(13, 17, 28, 0.85);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      padding: 6px 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+    }
+
+    .roast-input-group input:focus,
+    .roast-input-group select:focus {
+      border-color: #f97316;
+    }
+
+    .roast-actions-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    /* Sensor Map */
+    .sensor-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sensor-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(13, 17, 28, 0.6);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-sm);
+    }
+
+
+
+    .sensor-name {
+
+      font-size: 12px;
+
+      font-weight: 500;
+
+      color: var(--text-muted);
+
+    }
+
+
+
+    .sensor-state {
+
+      font-size: 11px;
+
+      font-weight: 700;
+
+      font-family: var(--font-mono);
+
+      padding: 2px 8px;
+
+      border-radius: 4px;
+
+    }
+
+
+
+    .sensor-state.true { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+    .sensor-state.false { background: rgba(244, 63, 94, 0.15); color: var(--accent-rose); }
+
+
+
+    /* Bottom Quick Action Dock */
+
+    .dock {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 10px;
+
+      align-items: center;
+
+      background: var(--bg-card);
+
+      backdrop-filter: blur(16px);
+
+      border: 1px solid var(--bg-card-border);
+
+      border-radius: var(--radius-lg);
+
+      padding: 16px 24px;
+
+    }
+
+
+
+    .dock-title {
+
+      font-family: var(--font-display);
+
+      font-weight: 700;
+
+      font-size: 13px;
+
+      color: var(--text-muted);
+
+      text-transform: uppercase;
+
+      letter-spacing: 0.5px;
+
+      margin-right: 8px;
+
+    }
+
+
+
+    /* Log Drawer */
+
+    .log-drawer {
+
+      background: rgba(10, 13, 20, 0.9);
+
+      border: 1px solid var(--bg-card-border);
+
+      border-radius: var(--radius-md);
+
+      padding: 12px 16px;
+
+      font-family: var(--font-mono);
+
+      font-size: 11px;
+
+      color: var(--text-muted);
+
+      max-height: 80px;
+
+      overflow-y: auto;
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 4px;
+
+    }
+
+
+
+    .log-line { display: flex; gap: 10px; }
+
+    .log-time { color: var(--text-dim); }
+    .log-msg.error { color: var(--accent-rose); }
+    .log-msg.info { color: var(--accent-cyan); }
+    .log-msg.success { color: var(--accent-emerald); }
+
+    /* Header Sensors */
+    .header-sensor-box {
+      background: rgba(10, 14, 23, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-sensor-pill {
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      border: 1px solid var(--bg-card-border);
+      background: rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .sensor-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: all 0.2s ease;
+    }
+    
+    /* Hub */
+    .header-sensor-pill.hub.active { background: rgba(245, 158, 11, 0.16); border-color: rgba(245, 158, 11, 0.45); }
+    .header-sensor-pill.hub.active .sensor-pill-dot { background: #f59e0b; box-shadow: 0 0 7px #f59e0b; }
+    .header-sensor-pill.hub.active .sensor-pill-val { color: #fde68a; }
+
+    /* Entry */
+    .header-sensor-pill.entry.active { background: rgba(6, 182, 212, 0.16); border-color: rgba(6, 182, 212, 0.45); }
+    .header-sensor-pill.entry.active .sensor-pill-dot { background: #06b6d4; box-shadow: 0 0 7px #06b6d4; }
+    .header-sensor-pill.entry.active .sensor-pill-val { color: #a5f3fc; }
+
+    /* Postgear */
+    .header-sensor-pill.postgear.active { background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.45); }
+    .header-sensor-pill.postgear.active .sensor-pill-dot { background: #10b981; box-shadow: 0 0 7px #10b981; }
+    .header-sensor-pill.postgear.active .sensor-pill-val { color: #a7f3d0; }
+
+    @media (max-width: 768px) {
+      .header-sensor-box { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-badge">ACE 2 PRO</div>
+      <h1>ACE 2 Pro Command Deck</h1>
+      <div style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color:#fde047; font-family:var(--font-mono); font-size:10px; font-weight:800; padding:4px 8px; border-radius:12px; letter-spacing:0.5px;">BETA v0.9.0-beta</div>
+    </div>
+    <div class="header-sensor-box">
+      <div class="sensor-box-tag" style="display:flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--text-dim); letter-spacing:0.5px; text-transform:uppercase; border-right:1px solid rgba(255,255,255,0.08); padding-right:8px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="color:var(--text-muted);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+        SWITCHES
+      </div>
+      <div class="header-sensor-pill hub" id="pillHub" title="4-in-1 Hub Detect Sensor">
+        <span class="sensor-pill-dot" id="dotHub"></span>
+        <span class="sensor-pill-label" style="color:#fbbf24; font-weight:600;">HUB</span>
+        <span class="sensor-pill-val" id="sensorHub" style="font-weight:700;">CLEAR</span>
+      </div>
+      <div class="header-sensor-pill entry" id="pillEntry" title="Toolhead Entry Switch">
+        <span class="sensor-pill-dot" id="dotEntry"></span>
+        <span class="sensor-pill-label" style="color:#38bdf8; font-weight:600;">ENTRY</span>
+        <span class="sensor-pill-val" id="sensorEntry" style="font-weight:700;">OPEN</span>
+      </div>
+      <div class="header-sensor-pill postgear" id="pillPostgear" title="Extruder Postgear Switch (Gripped)">
+        <span class="sensor-pill-dot" id="dotPostgear"></span>
+        <span class="sensor-pill-label" style="color:#34d399; font-weight:600;">TOOLHEAD</span>
+        <span class="sensor-pill-val" id="sensorPostgear" style="font-weight:700;">EMPTY</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="document.getElementById('settingsModal').style.display='flex'" title="Settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <a href="/" class="nav-btn" id="mainsailNavBtn" target="_top">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+        Mainsail
+      </a>
+      <div id="connectionPill" class="status-pill">
+        <div class="status-dot"></div>
+        <span id="connState">CONNECTING...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-card); border:1px solid var(--bg-card-border); padding:24px; border-radius:var(--radius-lg); width:320px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+      <h3 style="margin-bottom:16px; font-family:var(--font-display); color:var(--text-main);">Connection Settings</h3>
+      <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Moonraker Host (IP:Port)</label>
+      <input type="text" id="hostInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="e.g. 192.168.1.50:7125" />
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button class="btn" onclick="document.getElementById('settingsModal').style.display='none'">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save & Reconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid -->
+  <div class="dashboard-grid">
+    
+    <!-- Left: 4-Lane Controller -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+          Active ACE Lanes (T0 – T3)
+        </div>
+      </div>
+
+      <div class="lanes-grid">
+        <!-- Slot 0 -->
+        <div class="lane-card" id="slot-0">
+          <div class="lane-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="lane-badge">T0</span>
+              <span class="backup-badge" id="backupBadge0" style="display:none; font-size:10px; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid rgba(99,102,241,0.3); margin-left:6px;"></span>
+              <label class="lane-roast-toggle" title="Toggle rotisserie rotation for T0 during chamber heating (Roast vs Stationary)">
+                <input type="checkbox" id="roastLaneT0" checked onchange="saveRoastLanes(0)">
+                <span class="lane-roast-pill">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <span>ROAST</span>
+                </span>
+              </label>
+            </div>
+            <span class="lane-status ready">PARKED</span>
+          </div>
+          <div class="spool-visual">
+            <div class="spool-color-glow" style="background:#E0D7B6;"></div>
+            <div class="spool-circle" style="border-color:#E0D7B6;">
+              <div class="spool-inner">#22</div>
+            </div>
+          </div>
+          <div class="spool-info">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:2px;">
+              <div class="spool-material">PLA+ Bone White</div>
+              <button class="btn btn-micro" onclick="openSpoolAssignModal(0)" style="padding:2px 6px; font-size:10px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; margin-top:-2px;">🏷️ Assign</button>
+            </div>
+            <div class="spool-sku">Bone White · SKU: SM22</div>
+            <div class="spool-temp">210°C / 60°C</div>
+          </div>
+          <!-- Filament Path Track -->
+          <div class="lane-path-track" id="pathTrack-0">
+            <div class="path-track-header">
+              <span class="path-track-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                Track
+              </span>
+              <span class="path-track-pos" id="pathPosText-0">PARKED · 0mm</span>
+            </div>
+            <div class="path-visual-track">
+              <div class="path-tube-bg">
+                <div class="path-filament-strand" id="pathStrand-0" style="width:36%; background:#E0D7B6; box-shadow:0 0 8px #E0D7B680;">
+                  <div class="path-filament-tip" id="pathTip-0"></div>
+                </div>
+              </div>
+              <div class="path-nodes-row">
+                <div class="path-node gate active" id="nodeGate-0" title="ACE Buffer Gate">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GATE</span>
+                </div>
+                <div class="path-node park active" id="nodePark-0" title="Park Datum (50mm before Hub)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">PARK</span>
+                </div>
+                <div class="path-node hub" id="nodeHub-0" title="Hub Switch (4-into-1)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">HUB</span>
+                </div>
+                <div class="path-node entry" id="nodeEntry-0" title="Toolhead Entry Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">ENTRY</span>
+                </div>
+                <div class="path-node postgear" id="nodePost-0" title="Toolhead Postgear Gripped Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GRIP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lane-actions">
+            <button class="btn btn-primary" onclick="executeGcode('T0')">Select Lane</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+              <button class="btn" onclick="parkLaneAtHub(0)" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc;" title="Feed T0 to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
+              <button class="btn btn-danger" onclick="executeGcode('ACE_EJECT T=0')">Eject</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slot 1 -->
+        <div class="lane-card" id="slot-1">
+          <div class="lane-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="lane-badge">T1</span>
+              <span class="backup-badge" id="backupBadge1" style="display:none; font-size:10px; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid rgba(99,102,241,0.3); margin-left:6px;"></span>
+              <label class="lane-roast-toggle" title="Toggle rotisserie rotation for T1 during chamber heating (Roast vs Stationary)">
+                <input type="checkbox" id="roastLaneT1" checked onchange="saveRoastLanes(1)">
+                <span class="lane-roast-pill">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <span>ROAST</span>
+                </span>
+              </label>
+            </div>
+            <span class="lane-status ready">PARKED</span>
+          </div>
+          <div class="spool-visual">
+            <div class="spool-color-glow" style="background:#4B2A17;"></div>
+            <div class="spool-circle" style="border-color:#4B2A17;">
+              <div class="spool-inner">#26</div>
+            </div>
+          </div>
+          <div class="spool-info">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:2px;">
+              <div class="spool-material">Ecofil - Dark Brown</div>
+              <button class="btn btn-micro" onclick="openSpoolAssignModal(1)" style="padding:2px 6px; font-size:10px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; margin-top:-2px;">🏷️ Assign</button>
+            </div>
+            <div class="spool-sku">Dark Brown · SKU: SM26</div>
+            <div class="spool-temp">205°C / 55°C</div>
+          </div>
+          <!-- Filament Path Track -->
+          <div class="lane-path-track" id="pathTrack-1">
+            <div class="path-track-header">
+              <span class="path-track-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                Track
+              </span>
+              <span class="path-track-pos" id="pathPosText-1">PARKED · 0mm</span>
+            </div>
+            <div class="path-visual-track">
+              <div class="path-tube-bg">
+                <div class="path-filament-strand" id="pathStrand-1" style="width:36%; background:#4B2A17; box-shadow:0 0 8px #4B2A1780;">
+                  <div class="path-filament-tip" id="pathTip-1"></div>
+                </div>
+              </div>
+              <div class="path-nodes-row">
+                <div class="path-node gate active" id="nodeGate-1" title="ACE Buffer Gate">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GATE</span>
+                </div>
+                <div class="path-node park active" id="nodePark-1" title="Park Datum (50mm before Hub)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">PARK</span>
+                </div>
+                <div class="path-node hub" id="nodeHub-1" title="Hub Switch (4-into-1)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">HUB</span>
+                </div>
+                <div class="path-node entry" id="nodeEntry-1" title="Toolhead Entry Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">ENTRY</span>
+                </div>
+                <div class="path-node postgear" id="nodePost-1" title="Toolhead Postgear Gripped Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GRIP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lane-actions">
+            <button class="btn btn-primary" onclick="executeGcode('T1')">Select Lane</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+              <button class="btn" onclick="parkLaneAtHub(1)" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc;" title="Feed T1 to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
+              <button class="btn btn-danger" onclick="executeGcode('ACE_EJECT T=1')">Eject</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slot 2 -->
+        <div class="lane-card" id="slot-2">
+          <div class="lane-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="lane-badge">T2</span>
+              <span class="backup-badge" id="backupBadge2" style="display:none; font-size:10px; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid rgba(99,102,241,0.3); margin-left:6px;"></span>
+              <label class="lane-roast-toggle" title="Toggle rotisserie rotation for T2 during chamber heating (Roast vs Stationary)">
+                <input type="checkbox" id="roastLaneT2" checked onchange="saveRoastLanes(2)">
+                <span class="lane-roast-pill">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <span>ROAST</span>
+                </span>
+              </label>
+            </div>
+            <span class="lane-status ready">PARKED</span>
+          </div>
+          <div class="spool-visual">
+            <div class="spool-color-glow" style="background:#F7D959;"></div>
+            <div class="spool-circle" style="border-color:#F7D959;">
+              <div class="spool-inner">#24</div>
+            </div>
+          </div>
+          <div class="spool-info">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:2px;">
+              <div class="spool-material">Lemon Yellow</div>
+              <button class="btn btn-micro" onclick="openSpoolAssignModal(2)" style="padding:2px 6px; font-size:10px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; margin-top:-2px;">🏷️ Assign</button>
+            </div>
+            <div class="spool-sku">Lemon Yellow · SKU: SM24</div>
+            <div class="spool-temp">210°C / 60°C</div>
+          </div>
+          <!-- Filament Path Track -->
+          <div class="lane-path-track" id="pathTrack-2">
+            <div class="path-track-header">
+              <span class="path-track-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                Track
+              </span>
+              <span class="path-track-pos" id="pathPosText-2">PARKED · 0mm</span>
+            </div>
+            <div class="path-visual-track">
+              <div class="path-tube-bg">
+                <div class="path-filament-strand" id="pathStrand-2" style="width:36%; background:#F7D959; box-shadow:0 0 8px #F7D95980;">
+                  <div class="path-filament-tip" id="pathTip-2"></div>
+                </div>
+              </div>
+              <div class="path-nodes-row">
+                <div class="path-node gate active" id="nodeGate-2" title="ACE Buffer Gate">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GATE</span>
+                </div>
+                <div class="path-node park active" id="nodePark-2" title="Park Datum (50mm before Hub)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">PARK</span>
+                </div>
+                <div class="path-node hub" id="nodeHub-2" title="Hub Switch (4-into-1)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">HUB</span>
+                </div>
+                <div class="path-node entry" id="nodeEntry-2" title="Toolhead Entry Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">ENTRY</span>
+                </div>
+                <div class="path-node postgear" id="nodePost-2" title="Toolhead Postgear Gripped Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GRIP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lane-actions">
+            <button class="btn btn-primary" onclick="executeGcode('T2')">Select Lane</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+              <button class="btn" onclick="parkLaneAtHub(2)" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc;" title="Feed T2 to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
+              <button class="btn btn-danger" onclick="executeGcode('ACE_EJECT T=2')">Eject</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slot 3 -->
+        <div class="lane-card" id="slot-3" style="opacity: 0.5;">
+          <div class="lane-top">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="lane-badge">T3</span>
+              <span class="backup-badge" id="backupBadge3" style="display:none; font-size:10px; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:2px 6px; border-radius:4px; font-weight:600; border:1px solid rgba(99,102,241,0.3); margin-left:6px;"></span>
+              <label class="lane-roast-toggle" title="Toggle rotisserie rotation for T3 during chamber heating (Roast vs Stationary)">
+                <input type="checkbox" id="roastLaneT3" checked onchange="saveRoastLanes(3)">
+                <span class="lane-roast-pill">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  <span>ROAST</span>
+                </span>
+              </label>
+            </div>
+            <span class="lane-status empty">EMPTY</span>
+          </div>
+          <div class="spool-visual">
+            <div class="spool-color-glow" style="background:transparent; box-shadow:none;"></div>
+            <div class="spool-circle" style="border-color:rgba(255, 255, 255, 0.08);">
+              <div class="spool-inner" style="color:var(--text-muted);">—</div>
+            </div>
+          </div>
+          <div class="spool-info">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:2px;">
+              <div class="spool-material" style="color:var(--text-muted);">Empty Lane</div>
+              <button class="btn btn-micro" onclick="openSpoolAssignModal(3)" style="padding:2px 6px; font-size:10px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; margin-top:-2px;">🏷️ Assign</button>
+            </div>
+            <div class="spool-sku" id="t3-sku">No Spool Inserted</div>
+            <div class="spool-temp" id="t3-temp">— / —</div>
+          </div>
+          <!-- Filament Path Track -->
+          <div class="lane-path-track" id="pathTrack-3">
+            <div class="path-track-header">
+              <span class="path-track-title">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                Track
+              </span>
+              <span class="path-track-pos" id="pathPosText-3">EMPTY · CLEAR</span>
+            </div>
+            <div class="path-visual-track">
+              <div class="path-tube-bg">
+                <div class="path-filament-strand" id="pathStrand-3" style="width:0%;">
+                  <div class="path-filament-tip" id="pathTip-3"></div>
+                </div>
+              </div>
+              <div class="path-nodes-row">
+                <div class="path-node gate" id="nodeGate-3" title="ACE Buffer Gate">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GATE</span>
+                </div>
+                <div class="path-node park" id="nodePark-3" title="Park Datum (50mm before Hub)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">PARK</span>
+                </div>
+                <div class="path-node hub" id="nodeHub-3" title="Hub Switch (4-into-1)">
+                  <div class="node-dot"></div>
+                  <span class="node-label">HUB</span>
+                </div>
+                <div class="path-node entry" id="nodeEntry-3" title="Toolhead Entry Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">ENTRY</span>
+                </div>
+                <div class="path-node postgear" id="nodePost-3" title="Toolhead Postgear Gripped Switch">
+                  <div class="node-dot"></div>
+                  <span class="node-label">GRIP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lane-actions">
+            <button class="btn" onclick="parkLaneAtHub(3)" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc;" title="Feed T3 to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Dryer & Hardware Truth Table -->
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      
+            <!-- Thermal Chamber & Active Roast Deck -->
+      <div class="card roast-card" id="roastCard">
+        <div class="card-header">
+          <div class="card-title" style="gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316;">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+            </svg>
+            Thermal Chamber & Active Roast Deck
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="roast-badge idle" id="roastStatusBadge">
+              <span class="idle-dot" id="roastStatusDot"></span>
+              <span id="roastStatusText">HEATER OFF · IDLE</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Visual Animated Chamber Stage Banner -->
+        <div class="roast-stage" id="roastStage">
+          <!-- Convection heat animation layer -->
+          <div class="thermal-convection-layer">
+            <svg viewBox="0 0 400 120" preserveAspectRatio="none" style="width:100%; height:100%;">
+              <path class="heat-wave" d="M20,100 Q60,60 100,100 T180,100 T260,100 T340,100 T420,100" fill="none" stroke="rgba(249,115,22,0.4)" stroke-width="3" stroke-linecap="round"/>
+              <path class="heat-wave" d="M10,80 Q50,40 90,80 T170,80 T250,80 T330,80 T410,80" fill="none" stroke="rgba(251,146,60,0.3)" stroke-width="2.5" stroke-linecap="round"/>
+              <path class="heat-wave" d="M30,110 Q70,70 110,110 T190,110 T270,110 T350,110 T430,110" fill="none" stroke="rgba(234,88,12,0.25)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="roast-stage-content">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316;">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+              </svg>
+              <span style="font-size:11px; font-weight:700; color:var(--text-main); letter-spacing:0.3px;">PTC CONVECTION CHAMBER</span>
+            </div>
+            <span class="roast-stage-status" id="roastStageStatusText">CHAMBER STANDBY</span>
+          </div>
+        </div>
+
+        <!-- 3-Column Metrics Row -->
+        <div class="roast-metrics-3col">
+          <div class="metric-box">
+            <div class="metric-val temp" id="dryerTemp">—°C</div>
+            <div class="metric-label">Actual (Target: <span id="dryerTarget">0°C</span>)</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val humidity" id="dryerHumidity">—%</div>
+            <div class="metric-label">Chamber RH</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val" id="roastTimerDisplay" style="color:#fb923c; font-size:18px;">OFF</div>
+            <div class="metric-label" id="dryrollState">Rotisserie Inactive</div>
+          </div>
+        </div>
+
+        <!-- Rotisserie & Print Integration Options -->
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <!-- Spool Rotisserie Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-sm); padding:8px 12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#f97316;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:var(--text-main);">Spool Rotisserie</div>
+                <div style="font-size:9px; color:var(--text-muted);">Rotate selected spools while drying</div>
+              </div>
+            </div>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px; font-weight:700; color:var(--text-main); user-select:none;">
+              <input type="checkbox" id="roastRotisserieToggle" checked onchange="toggleRotisserieMode()" style="accent-color:#f97316; width:16px; height:16px; cursor:pointer;">
+              <span id="roastRotisserieLabel" style="color:#fb923c;">Roast Active</span>
+            </label>
+          </div>
+
+          <!-- Auto-Resume Post-Print Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-sm); padding:8px 12px;" title="Automatically resume roasting for stopped lanes after print finishes if they were roasting prior to print">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366f1;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:var(--text-main);">Auto-Resume Post-Print</div>
+                <div style="font-size:9px; color:var(--text-muted);">Resume roast when print ends</div>
+              </div>
+            </div>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px; font-weight:700; color:var(--text-main); user-select:none;">
+              <input type="checkbox" id="roastAutoResumeToggle" onchange="toggleRoastAutoResume(this.checked)" style="accent-color:#6366f1; width:16px; height:16px; cursor:pointer;">
+              <span id="roastAutoResumeLabel" style="color:var(--text-muted);">Off</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Quick Material Presets -->
+        <!-- Mode Toggle -->
+        <div class="roast-mode-toggle" style="display: flex; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px;">
+          <button id="btnMode1" onclick="setDryerMode(1)" style="flex:1; padding:8px; border-radius:6px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer; transition: all 0.2s;">Mode 1: Timed Roast</button>
+          <button id="btnMode2" onclick="setDryerMode(2)" style="flex:1; padding:8px; border-radius:6px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer; transition: all 0.2s;">Mode 2: Maintain RH</button>
+        </div>
+
+        <div class="roast-presets-title">
+          <span>MATERIAL PRESETS</span>
+          <span style="font-size:9px; font-weight:400; color:var(--text-muted);">Auto-sets parameters</span>
+        </div>
+        <div class="roast-preset-strip">
+          <button class="roast-preset-pill" onclick="applyRoastPreset('PLA', 45, 240, 20)">PLA 45° · 20%</button>
+          <button class="roast-preset-pill" onclick="applyRoastPreset('PETG', 55, 360, 20)">PETG 55° · 20%</button>
+          <button class="roast-preset-pill" onclick="applyRoastPreset('ABS', 55, 360, 15)">ABS 55° · 15%</button>
+          <button class="roast-preset-pill" onclick="applyRoastPreset('TPU', 45, 240, 15)">TPU 45° · 15%</button>
+          <button class="roast-preset-pill" onclick="applyRoastPreset('PA', 55, 480, 10)">PA 55° · 10%</button>
+        </div>
+
+        <!-- Custom Parameters -->
+        <div class="roast-custom-row" id="roastParamsMode1">
+          <div class="roast-input-group">
+            <label for="roastTempInput">Target Temp (°C)</label>
+            <input type="number" id="roastTempInput" min="30" max="65" value="45">
+          </div>
+          <div class="roast-input-group">
+            <label for="roastTimeInput">Duration (Minutes)</label>
+            <input type="number" id="roastTimeInput" min="15" max="1440" step="30" value="240">
+          </div>
+        </div>
+        <div class="roast-custom-row" id="roastParamsMode2" style="display:none; grid-template-columns: repeat(3, 1fr);">
+          <div class="roast-input-group">
+            <label for="roastTempInputM2">Target Temp (°C)</label>
+            <input type="number" id="roastTempInputM2" min="30" max="65" value="45" oninput="window.hasUserEditedMode2=true">
+          </div>
+          <div class="roast-input-group">
+            <label for="roastRhInputM2">Target RH (%)</label>
+            <input type="number" id="roastRhInputM2" min="10" max="50" value="20" oninput="window.hasUserEditedMode2=true; updateRoastDeckUI()">
+          </div>
+          <div class="roast-input-group">
+            <label for="roastIntervalInputM2">Check Int. (min)</label>
+            <input type="number" id="roastIntervalInputM2" min="1" max="60" value="10" oninput="window.hasUserEditedMode2=true">
+          </div>
+        </div>
+        <button class="btn btn-sm" id="btnApplyMode2" onclick="applyMode2Settings()" style="background:var(--accent-emerald, #10b981); color:white; font-weight:700; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; margin-top:8px; display:none; align-items:center; justify-content:center; gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+          Save & Apply Settings
+        </button>
+
+        <!-- Action Controls -->
+        <div class="roast-actions-row">
+          <!-- Primary Dryer Toggle: Start Drying / Stop Drying -->
+          <button class="btn btn-primary" id="btnDryerToggle" onclick="handleDryerToggleClick()" style="grid-column: span 2; padding: 12px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-color: #ea580c; color: #ffffff;">
+            <svg id="iconDryerToggle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+            </svg>
+            <span id="btnDryerToggleText">Start Drying</span>
+          </button>
+
+          <!-- Agitate Selected (Manual Test Jog) -->
+          <button class="btn" id="btnAgitate" onclick="agitateSelected()" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); color: var(--text-main);" title="Run a 10s manual test jog on selected lanes to test motor grip">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            Agitate Selected
+          </button>
+
+          <!-- Park Ready Lanes -->
+          <button class="btn" id="btnCalibrate" onclick="parkReadyLanes()" style="background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); color: #a5b4fc;" title="Park all ready lanes sequentially to Hub sensor (establishes safe park datums via ACE_LANE_NORMALIZE)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/>
+            </svg>
+            Park Ready Lanes
+          </button>
+        </div>
+      </div>
+
+
+
+
+
+      <!-- Endless Spool Configurator Card -->
+      <div class="card" id="endlessSpoolCard">
+        <div class="card-header">
+          <div class="card-title" style="gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#6366f1;">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            Endless Spool Configurator
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Auto-Swap</span>
+            <label class="toggle-switch" title="Toggle Endless Spool Auto-Swap on Runout">
+              <input type="checkbox" id="endlessMasterToggle" onchange="toggleEndlessSpool(this.checked)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="endlessMasterLabel" style="font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--text-muted); min-width:55px;">DISABLED</span>
+          </div>
+        </div>
+        
+        <div style="padding:12px; display:flex; flex-direction:column; gap:16px;">
+          
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Runout Mode</label>
+            <div style="display:flex; gap:8px;">
+              <select id="endlessModeSelect" onchange="setEndlessMode(this.value)" style="flex:1; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-main); padding:6px 10px; border-radius:6px; font-family:var(--font-body); font-size:12px; outline:none;">
+                <option value="material">Auto (Material)</option>
+                <option value="exact">Exact (Color & Material)</option>
+                <option value="next">Next Ready</option>
+                <option value="prompt">Prompt / Manual</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Backup Lane Assignments</label>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="backupMatrixContainer">
+              <!-- Matrix populated by JS -->
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Utility Dock -->
+  <div class="dock" style="padding: 10px 20px; display: flex; align-items: center; gap: 12px;">
+    <div class="dock-title" style="font-size: 11px; margin-right: 4px;">UTILITY / SAFETY:</div>
+    <button class="btn btn-warning" onclick="executeGcode('ACE_CLEAR_OP')" title="Clear safety lock (ace_op) in save_variables if a toolchange was aborted mid-flight" style="padding: 6px 14px; font-size: 12px; display: flex; align-items: center; gap: 6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Reset Aborted Swap Lock
+    </button>
+    <button class="btn btn-danger" onclick="executeGcode('M112')" title="Hard emergency stop (M112)" style="padding: 6px 14px; font-size: 12px; margin-left: auto; display: flex; align-items: center; gap: 6px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Emergency Stop (M112)
+    </button>
+  </div>
+
+  <!-- Realtime Log -->
+  <div class="log-drawer" id="logDrawer">
+    <div class="log-line">
+      <span class="log-time">[Ready]</span>
+      <span class="log-msg info">Command Deck initialized. Connecting to Moonraker...</span>
+    </div>
+  </div>
+
+  <script>
+    function resolveHost() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hostParam = urlParams.get('host');
+      if (hostParam) return hostParam;
+      
+      const saved = localStorage.getItem('moonraker_host');
+      if (saved) return saved;
+
+      if (window.location.protocol === "file:") {
+        const p = prompt("Enter Moonraker IP:PORT (e.g., 192.168.1.50:7125)", "localhost:7125") || "localhost:7125";
+        localStorage.setItem('moonraker_host', p);
+        return p;
+      }
+      
+      return window.location.host;
+    }
+
+    let MOONRAKER_HOST = resolveHost();
+    const IS_HTTPS = window.location.protocol === "https:";
+    
+    // We export a function so it can be updated
+    let WS_URL = `${IS_HTTPS ? "wss:" : "ws:"}//${MOONRAKER_HOST}/websocket`;
+    let API_BASE = `${IS_HTTPS ? "https:" : "http:"}//${MOONRAKER_HOST}`;
+
+    function saveSettings() {
+      const inp = document.getElementById('hostInput').value.trim();
+      if (inp) {
+        localStorage.setItem('moonraker_host', inp);
+        MOONRAKER_HOST = inp;
+        WS_URL = `${IS_HTTPS ? "wss:" : "ws:"}//${MOONRAKER_HOST}/websocket`;
+        API_BASE = `${IS_HTTPS ? "https:" : "http:"}//${MOONRAKER_HOST}`;
+        document.getElementById('settingsModal').style.display = 'none';
+        
+        if (ws) {
+          ws.onclose = null;
+          ws.close();
+        }
+        connectMoonraker();
+        log("Updated Moonraker Host to " + MOONRAKER_HOST, "success");
+      }
+    }
+
+    let ws = null;
+    let reqId = 1000;
+    let mmuCache = {};
+    let aceCache = { slots: [{}, {}, {}, {}] };
+    let slotColorCache = {};
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Hide the '< Mainsail' return button when running inside Mainsail's iframe
+      if (window.self !== window.top) {
+        const navBtn = document.getElementById("mainsailNavBtn");
+        if (navBtn) navBtn.style.display = "none";
+      }
+
+      const hostInput = document.getElementById("hostInput");
+      if (hostInput) {
+        hostInput.value = MOONRAKER_HOST;
+      }
+
+      [0, 1, 2, 3].forEach(idx => {
+        const card = document.getElementById(`slot-${idx}`);
+        if (card) {
+          const glowEl = card.querySelector(".spool-color-glow");
+          if (glowEl && glowEl.style.background && glowEl.style.background !== "transparent") {
+            let bg = glowEl.style.background;
+            if (bg.startsWith("#")) slotColorCache[idx] = bg.replace("#", "");
+          }
+        }
+      });
+    });
+
+    const COLOR_NAMES = {
+      "000000": "Black",
+      "FFFFFF": "White",
+      "E0D7B6": "Bone White",
+      "4B2A17": "Dark Brown",
+      "3A2265": "Deep Purple",
+      "AB80E8": "Translucent Purple",
+      "F7D959": "Lemon Yellow",
+      "808080": "Grey",
+      "FF0000": "Red",
+      "00FF00": "Green",
+      "0000FF": "Blue",
+      "FFA500": "Orange",
+      "FFC0CB": "Pink",
+      "A52A2A": "Brown"
+    };
+
+    function colorHexToName(hex) {
+      if (!hex) return "";
+      hex = hex.replace("#", "").toUpperCase();
+      if (COLOR_NAMES[hex]) return COLOR_NAMES[hex];
+      let r = parseInt(hex.substring(0, 2), 16) || 0;
+      let g = parseInt(hex.substring(2, 4), 16) || 0;
+      let b = parseInt(hex.substring(4, 6), 16) || 0;
+      if (r < 40 && g < 40 && b < 40) return "Black";
+      if (r > 220 && g > 220 && b > 220) return "White";
+      if (Math.abs(r - g) < 20 && Math.abs(g - b) < 20) return "Grey";
+      if (r > 140 && g < 160 && b > 200) return "Translucent Purple";
+      if (r > 180 && g > 180 && b < 100) return "Yellow";
+      if (r > 180 && g > 100 && b < 50) return "Orange";
+      if (r > 180 && g < 80 && b < 80) return "Red";
+      if (r < 80 && g > 150 && b < 80) return "Green";
+      if (r < 80 && g < 100 && b > 180) return "Blue";
+      return "";
+    }
+
+    function log(msg, type = "info") {
+      const drawer = document.getElementById("logDrawer");
+      const line = document.createElement("div");
+      line.className = "log-line";
+      const time = new Date().toLocaleTimeString();
+      line.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg ${type}">${msg}</span>`;
+      drawer.appendChild(line);
+      drawer.scrollTop = drawer.scrollHeight;
+    }
+
+    
+    function loadRoastLanes() {
+      try {
+        const savedRot = localStorage.getItem('ace_roast_rotisserie');
+        const rotChk = document.getElementById('roastRotisserieToggle');
+        const rotLbl = document.getElementById('roastRotisserieLabel');
+        if (savedRot === '0' && rotChk && rotLbl) {
+          rotChk.checked = false;
+          rotLbl.innerText = "Stationary";
+          rotLbl.style.color = "var(--text-muted)";
+        } else if (rotChk && rotLbl) {
+          rotChk.checked = true;
+          rotLbl.innerText = "Rotisserie Active";
+          rotLbl.style.color = "#fb923c";
+        }
+        
+        const saved = JSON.parse(localStorage.getItem('ace_roast_lanes'));
+        if (Array.isArray(saved) && saved.length === 4) {
+          [0, 1, 2, 3].forEach(i => {
+            const chk = document.getElementById(`roastLaneT${i}`);
+            if (chk) chk.checked = Boolean(saved[i]);
+            const bay = document.getElementById(`roastBay${i}`);
+            if (bay) bay.classList.toggle("selected", Boolean(saved[i]));
+          });
+          return;
+        }
+      } catch (e) {}
+      [0, 1, 2, 3].forEach(i => {
+        const chk = document.getElementById(`roastLaneT${i}`);
+        if (chk) chk.checked = true;
+        const bay = document.getElementById(`roastBay${i}`);
+        if (bay) bay.classList.add("selected");
+      });
+    }
+
+    function saveRoastLanes(changedIdx) {
+      const states = [0, 1, 2, 3].map(i => {
+        const chk = document.getElementById(`roastLaneT${i}`);
+        const isChecked = chk ? chk.checked : true;
+        const bay = document.getElementById(`roastBay${i}`);
+        if (bay) bay.classList.toggle("selected", isChecked);
+        return isChecked;
+      });
+      localStorage.setItem('ace_roast_lanes', JSON.stringify(states));
+
+      // If roast is currently active, dynamically add or remove the changed lane from rotation!
+      if (dryrollActiveCache && changedIdx !== undefined && changedIdx >= 0 && changedIdx < 4) {
+        const isChecked = states[changedIdx];
+        log(`Dynamically ${isChecked ? 'adding' : 'removing'} T${changedIdx} ${isChecked ? 'to' : 'from'} active rotisserie...`, "info");
+        executeGcode(`ACE_ROAST_SET_LANE T=${changedIdx} ACTIVE=${isChecked ? 1 : 0}`);
+      }
+      updateRoastDeckUI();
+      if (roastAnimTimer) {
+        tickRoastAnimation();
+      }
+    }
+
+
+    let currentDryerMode = 1;
+
+    function setDryerMode(mode) {
+      currentDryerMode = mode;
+      const btn1 = document.getElementById("btnMode1");
+      const btn2 = document.getElementById("btnMode2");
+      const pMode1 = document.getElementById("roastParamsMode1");
+      const pMode2 = document.getElementById("roastParamsMode2");
+      const btnApply = document.getElementById("btnApplyMode2");
+      
+      if (mode === 1) {
+        if(btn1) { btn1.style.background = "var(--primary)"; btn1.style.color = "white"; }
+        if(btn2) { btn2.style.background = "transparent"; btn2.style.color = "var(--text-muted)"; }
+        if(pMode1) pMode1.style.display = "flex";
+        if(pMode2) pMode2.style.display = "none";
+        if(btnApply) btnApply.style.display = "none";
+      } else {
+        if(btn2) { btn2.style.background = "var(--accent-emerald)"; btn2.style.color = "white"; }
+        if(btn1) { btn1.style.background = "transparent"; btn1.style.color = "var(--text-muted)"; }
+        if(pMode1) pMode1.style.display = "none";
+        if(pMode2) pMode2.style.display = "grid";
+        if(btnApply) btnApply.style.display = "inline-flex";
+      }
+      updateRoastDeckUI();
+    }
+
+    function applyMode2Settings() {
+      const temp = document.getElementById("roastTempInputM2")?.value || 45;
+      const rh = document.getElementById("roastRhInputM2")?.value || 20;
+      const interval = document.getElementById("roastIntervalInputM2")?.value || 10;
+      log(`Applied Mode 2 settings: Hold ≤${rh}% RH at ${temp}°C (check every ${interval}m)`, "success");
+      executeGcode(`ACE_AUTODRY TARGET_RH=${rh} TEMP=${temp} INTERVAL=${interval}`);
+      updateRoastDeckUI();
+    }
+
+    function applyRoastPreset(mat, temp, mins, rh) {
+      if (currentDryerMode === 1) {
+        const tIn = document.getElementById("roastTempInput");
+        const mIn = document.getElementById("roastTimeInput");
+        if (tIn) tIn.value = temp;
+        if (mIn) mIn.value = mins;
+        log(`Selected preset for ${mat}: ${temp}°C for ${mins}min`, "info");
+      } else {
+        const tIn2 = document.getElementById("roastTempInputM2");
+        const rIn2 = document.getElementById("roastRhInputM2");
+        if (tIn2) tIn2.value = temp;
+        if (rIn2 && rh !== undefined) rIn2.value = rh;
+        log(`Selected auto-dry preset for ${mat}: ${temp}°C, ≤${rh}% RH`, "info");
+        updateRoastDeckUI();
+      }
+    }
+
+    function handleDryerToggleClick() {
+      const sv = lastStatusCache?.save_variables?.variables || {};
+      const autoDryStatus = lastStatusCache["gcode_macro ACE_AUTODRY"];
+      const isAutoDryActive = autoDryStatus ? Boolean(autoDryStatus.active) : Boolean(sv.ace_autodry_active);
+      const ds = aceCache.dryer_status || {};
+      const isHeating = (ds.status === "drying");
+
+      if (isAutoDryActive || isHeating) {
+        if (isAutoDryActive) {
+          executeGcode("ACE_DRY_OFF");
+        } else {
+          turnOffAll();
+        }
+      } else {
+        if (currentDryerMode === 1) {
+          const rotisChk = document.getElementById("roastRotisserieToggle");
+          const rotate = rotisChk ? rotisChk.checked : true;
+          if (rotate) {
+            startRoast();
+          } else {
+            startHeatOnly();
+          }
+        } else {
+          const temp = document.getElementById("roastTempInputM2")?.value || 45;
+          const rh = document.getElementById("roastRhInputM2")?.value || 20;
+          const interval = document.getElementById("roastIntervalInputM2")?.value || 10;
+          executeGcode(`ACE_AUTODRY TARGET_RH=${rh} TEMP=${temp} INTERVAL=${interval}`);
+        }
+      }
+    }
+
+
+    function startRoast() {
+      const selected = [0, 1, 2, 3].filter(i => {
+        const chk = document.getElementById(`roastLaneT${i}`);
+        return chk && chk.checked;
+      });
+      if (selected.length === 0) {
+        log("No lanes selected for roast. Please check at least one lane.", "error");
+        return;
+      }
+      const temp = parseInt(document.getElementById("roastTempInput")?.value) || 45;
+      const mins = parseInt(document.getElementById("roastTimeInput")?.value) || 240;
+      log(`Starting roast on lanes [${selected.join(',')}] at ${temp}°C for ${mins}m...`, "info");
+      executeGcode(`ACE_ROAST LANES=${selected.join(',')} TEMP=${temp} MINUTES=${mins}`);
+      const chk = document.getElementById("roastRotisserieToggle");
+      if (chk) chk.checked = true;
+      const lbl = document.getElementById("roastRotisserieLabel");
+      if (lbl) {
+        lbl.innerText = "Roast Active (Rotating)";
+        lbl.style.color = "#fb923c";
+      }
+    }
+
+    function stopRoastKeepHeat() {
+      log("Stopping roast rotisserie (maintaining stationary chamber heat)...", "info");
+      executeGcode("ACE_DRYROLL_STOP");
+      const chk = document.getElementById("roastRotisserieToggle");
+      if (chk) chk.checked = false;
+      const lbl = document.getElementById("roastRotisserieLabel");
+      if (lbl) {
+        lbl.innerText = "Heat Only (Stationary)";
+        lbl.style.color = "var(--text-muted)";
+      }
+      dryrollActiveCache = false;
+      updateRoastDeckUI();
+    }
+
+    function turnOffAll() {
+      log("Turning off dryer chamber heater and spool rotation completely...", "info");
+      executeGcode("ACE_ROAST_STOP");
+      dryrollActiveCache = false;
+      updateRoastDeckUI();
+    }
+
+    function stopRoast() {
+      stopRoastKeepHeat();
+    }
+
+    function startHeatOnly() {
+      const temp = parseInt(document.getElementById("roastTempInput")?.value) || 45;
+      const mins = parseInt(document.getElementById("roastTimeInput")?.value) || 240;
+      log(`Starting chamber heater only (Heat Only, Stationary Spools) at ${temp}°C for ${mins}m...`, "info");
+      executeGcode(`ACE_START_DRYING TEMP=${temp} DURATION=${mins}`);
+      const chk = document.getElementById("roastRotisserieToggle");
+      if (chk) chk.checked = false;
+      const lbl = document.getElementById("roastRotisserieLabel");
+      if (lbl) {
+        lbl.innerText = "Heat Only (Stationary)";
+        lbl.style.color = "var(--text-muted)";
+      }
+    }
+
+    function stopHeating() {
+      log("Stopping chamber heater...", "info");
+      executeGcode("ACE_STOP_DRYING");
+    }
+
+    function pauseRotation() {
+      log("Pausing spool rotation (chamber heater remains active)...", "info");
+      executeGcode("ACE_DRYROLL_STOP");
+      const chk = document.getElementById("roastRotisserieToggle");
+      if (chk) chk.checked = false;
+      const lbl = document.getElementById("roastRotisserieLabel");
+      if (lbl) {
+        lbl.innerText = "Stationary";
+        lbl.style.color = "var(--text-muted)";
+      }
+    }
+
+    function toggleRotisserieMode() {
+      const chk = document.getElementById("roastRotisserieToggle");
+      const isChecked = chk ? chk.checked : true;
+      localStorage.setItem('ace_roast_rotisserie', isChecked ? '1' : '0');
+      const lbl = document.getElementById("roastRotisserieLabel");
+      const ds = aceCache.dryer_status || {};
+      const isHeating = (ds.status === "drying");
+
+      if (isChecked) {
+        if (lbl) {
+          lbl.innerText = "Rotisserie Active";
+          lbl.style.color = "#fb923c";
+        }
+        if (isHeating && !dryrollActiveCache) {
+          log("Enabling spool rotisserie for active drying...", "info");
+          startRoast();
+        }
+      } else {
+        if (lbl) {
+          lbl.innerText = "Stationary";
+          lbl.style.color = "var(--text-muted)";
+        }
+        if (dryrollActiveCache) {
+          log("Disabling spool rotisserie (maintaining heat only)...", "info");
+          stopRoastKeepHeat();
+        }
+      }
+      updateRoastDeckUI();
+    }
+
+    function toggleRoastAutoResume(enabled) {
+      const val = enabled ? 1 : 0;
+      const lbl = document.getElementById("roastAutoResumeLabel");
+      if (lbl) {
+        lbl.innerText = enabled ? "Active" : "Off";
+        lbl.style.color = enabled ? "#a5b4fc" : "var(--text-muted)";
+      }
+      log(`Setting post-print roast auto-resume: ${enabled ? 'ENABLED' : 'DISABLED'} (ACE_DRYROLL_SET_AUTORESUME)...`, "info");
+      executeGcode(`ACE_DRYROLL_SET_AUTORESUME ENABLE=${val}`);
+    }
+
+    function parkReadyLanes() {
+      const hubOccupied = Boolean(lastStatusCache?.["filament_switch_sensor hub_detect"]?.filament_detected);
+      if (hubOccupied) {
+        log("Cannot park lanes: Hub switch is occupied. Clear toolhead/hub path first.", "error");
+        return;
+      }
+      log("Parking ready lanes to Hub sensor (ACE_LANE_NORMALIZE)...", "info");
+      executeGcode("ACE_LANE_NORMALIZE");
+    }
+    const calibrateLanes = parkReadyLanes;
+
+    function parkLaneAtHub(idx) {
+      const hubOccupied = Boolean(lastStatusCache?.["filament_switch_sensor hub_detect"]?.filament_detected);
+      if (hubOccupied) {
+        log(`Cannot park T${idx}: Hub switch is occupied. Clear toolhead/hub path first.`, "error");
+        return;
+      }
+      log(`Parking T${idx} at Hub sensor (establishing park datum via ACE_LANE_NORMALIZE)...`, "info");
+      executeGcode(`ACE_LANE_NORMALIZE T=${idx}`);
+    }
+
+    function stopAllAceMotors() {
+      log("Emergency disarming all ACE feeder motors and assists...", "warning");
+      executeGcode("ACE_RAW_STOP T=0\nACE_RAW_STOP T=1\nACE_RAW_STOP T=2\nACE_RAW_STOP T=3\nM84");
+    }
+
+    function calibratePtfeLength(idx) {
+      const confirmCal = confirm(`Run physical Bowden PTFE length calibration for T${idx}?\n\nThis will feed filament through the 4-to-1 Hub switch to measure total path length, update P95 history, and establish the park datum.\n\nProceed?`);
+      if (!confirmCal) return;
+      log(`Starting ONE-SWOOP physical PTFE measurement for T${idx}...`, "info");
+      executeGcode(`ACE_CALIBRATE_LANES LANE=${idx}`);
+    }
+    const calibrateSingleLane = calibratePtfeLength;
+
+    function formatPtfeBadgeHtml(sv, idx) {
+      const ptfe = getSharedPtfeLength(sv, idx);
+      const hist = sv?.ace_cal_ptfe_history;
+      const samples = (Array.isArray(hist) && Array.isArray(hist[idx])) ? hist[idx] : [];
+      const label = samples.length > 1 ? `P95: ${ptfe}mm (${samples.length})` : `PTFE: ${ptfe}mm`;
+      const tooltip = samples.length > 0
+        ? `95th Percentile: ${ptfe}mm over ${samples.length} samples: [${samples.join(', ')}]. Click to manually edit or reset.`
+        : `PTFE length: ${ptfe}mm. Click to manually set length.`;
+      return `<span class="ptfe-badge" onclick="promptSetPtfe(${idx})" title="${tooltip}" style="cursor:pointer; text-decoration:underline dashed rgba(165,180,252,0.5); text-underline-offset:3px;">${label} ✎</span><button class="btn-micro" onclick="calibratePtfeLength(${idx})" title="Run physical Bowden PTFE measurement sweep (ONE-SWOOP) for T${idx}" style="background:transparent; border:1px solid rgba(148,163,184,0.2); color:#94a3b8; font-size:10px; padding:1px 5px; border-radius:4px; margin-left:6px; cursor:pointer;">📏 Cal</button>`;
+    }
+
+    function promptSetPtfe(tool) {
+      const sv = lastStatusCache?.save_variables?.variables || {};
+      const current = getSharedPtfeLength(sv, tool);
+      const hist = sv?.ace_cal_ptfe_history;
+      const samples = (Array.isArray(hist) && Array.isArray(hist[tool])) ? hist[tool] : [];
+      const winSize = sv?.ace_cal_ptfe_history_size || 10;
+      let promptMsg = `Bowden PTFE Calibration for Lane T${tool}:\n`;
+      promptMsg += `• Active 95th Percentile: ${current}mm\n`;
+      promptMsg += `• Buffer: ${samples.length}/${winSize} samples [${samples.join(', ') || 'none'}]\n\n`;
+      promptMsg += `Options:\n`;
+      promptMsg += `• Enter a number (300-2500) to manually set length (clears history & seeds this value)\n`;
+      promptMsg += `• Type 'reset' to clear history and re-seed to ${current}mm\n`;
+      promptMsg += `• Type 'size=XX' (e.g. 'size=10') to change rolling sample window size\n`;
+      promptMsg += `• Type 'cal' or 'measure' to run physical ONE-SWOOP tube measurement sweep`;
+
+      const res = prompt(promptMsg, current);
+      if (res === null) return;
+      const trimmed = res.trim().toLowerCase();
+      if (trimmed === 'cal' || trimmed === 'measure') {
+        calibratePtfeLength(tool);
+        return;
+      }
+      if (trimmed === 'reset') {
+        log(`Resetting Lane T${tool} calibration history (re-seeding to ${current}mm)...`, "info");
+        executeGcode(`ACE_RESET_PTFE_HISTORY T=${tool}`);
+        return;
+      }
+      if (trimmed.startsWith('size=')) {
+        const sz = parseInt(trimmed.replace('size=', '').trim());
+        if (isNaN(sz) || sz < 2 || sz > 50) {
+          log(`Invalid history window size: "${trimmed}". Must be between 2 and 50.`, "error");
+          return;
+        }
+        log(`Setting rolling calibration window to last ${sz} samples...`, "info");
+        executeGcode(`ACE_PTFE_HISTORY SIZE=${sz}`);
+        return;
+      }
+      const val = parseFloat(res);
+      if (isNaN(val) || val < 300 || val > 2500) {
+        log(`Invalid PTFE input: "${res}". Must be between 300mm and 2500mm, 'reset', 'size=XX', or 'cal'.`, "error");
+        return;
+      }
+      log(`Setting Lane T${tool} PTFE length to ${Math.round(val)}mm (resets P95 history)...`, "info");
+      executeGcode(`ACE_SET_PTFE_LENGTH T=${tool} LENGTH=${Math.round(val)}`);
+    }
+
+    function agitateSelected() {
+      const selected = [0, 1, 2, 3].filter(i => {
+        const chk = document.getElementById(`roastLaneT${i}`);
+        return chk && chk.checked;
+      });
+      if (selected.length === 0) {
+        log("No lanes selected to agitate.", "error");
+        return;
+      }
+      log(`Agitating selected lanes [${selected.join(',')}]...`, "info");
+      executeGcode(`ACE_ROAST_AGITATE LANES=${selected.join(',')}`);
+      manualAgitating = true;
+      updateRoastDeckUI();
+      if (agitateTimeout) clearTimeout(agitateTimeout);
+      agitateTimeout = setTimeout(() => {
+        manualAgitating = false;
+        updateRoastDeckUI();
+      }, 10000);
+    }
+
+    function connectMoonraker() {
+      ws = new WebSocket(WS_URL);
+
+      ws.onopen = () => {
+        document.getElementById("connState").innerText = "CONNECTED (LIVE WS)";
+        document.getElementById("connectionPill").style.background = "rgba(16, 185, 129, 0.12)";
+        log("WebSocket connected cleanly to Moonraker", "success");
+
+        // Subscribe to ACE & Printer objects
+        ws.send(JSON.stringify({
+          jsonrpc: "2.0",
+          method: "printer.objects.subscribe",
+          params: {
+            objects: {
+              ace: null,
+              ace_instance_0: null,
+              ace_state: null,
+              mmu: null,
+              filament_switch_sensor: null,
+              "filament_switch_sensor toolhead_entry": null,
+              "filament_switch_sensor toolhead_postgear": null,
+              "filament_switch_sensor hub_detect": null,
+              save_variables: null,
+              "gcode_macro ACE_AUTODRY": null
+            }
+          },
+          id: ++reqId
+        }));
+
+        // Immediate query
+        fetch(`${API_BASE}/printer/objects/query?ace&ace_instance_0&mmu&filament_switch_sensor%20toolhead_entry&filament_switch_sensor%20toolhead_postgear&filament_switch_sensor%20hub_detect&save_variables`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.result && data.result.status) {
+              handleStatusUpdate(data.result.status);
+            }
+          })
+          .catch(e => console.error("Initial status query failed", e));
+      };
+
+      ws.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (data.error) {
+            log(`GCode Error: ${data.error.message || JSON.stringify(data.error)}`, "error");
+            for (let t = 0; t < 4; t++) {
+              if (laneCalibrationState[t] && !laneCalibrationState[t].isDone) {
+                laneCalibrationState[t] = null;
+              }
+            }
+            refreshLaneTracks();
+          } else if (data.method === "notify_status_update") {
+            handleStatusUpdate(data.params[0]);
+          } else if (data.method === "notify_gcode_response") {
+            if (Array.isArray(data.params) && typeof data.params[0] === "string") {
+              handleGcodeResponse(data.params[0]);
+            }
+          } else if (data.result && data.result.status) {
+            handleStatusUpdate(data.result.status);
+          }
+        } catch (e) {
+          console.error("WS Parse error", e);
+        }
+      };
+
+      ws.onerror = () => {
+        document.getElementById("connState").innerText = "WS ERROR";
+        document.getElementById("connectionPill").style.background = "rgba(244, 63, 94, 0.15)";
+      };
+
+      ws.onclose = () => {
+        document.getElementById("connState").innerText = "DISCONNECTED - RETRYING";
+        setTimeout(connectMoonraker, 3000);
+      };
+    }
+
+    let dryrollActiveCache = false;
+    let manualAgitating = false;
+    let agitateTimeout = null;
+    let lastStatusCache = {};
+
+    const laneCalibrationState = { 0: null, 1: null, 2: null, 3: null };
+    const calibrationResetTimers = {};
+
+    function setCalibrationState(t, phase, step, text, pct, isDone = false, badgeText = null) {
+      if (!badgeText) {
+        badgeText = isDone ? "CALIBRATED" : "CALIBRATING";
+      }
+      laneCalibrationState[t] = { phase, step, text, pct, isDone, badgeText };
+
+      const card = document.getElementById(`slot-${t}`);
+      const strand = document.getElementById(`pathStrand-${t}`);
+      const tip = document.getElementById(`pathTip-${t}`);
+      const posText = document.getElementById(`pathPosText-${t}`);
+      const badgeEl = card ? card.querySelector(".lane-status") : null;
+      const nodeGate = document.getElementById(`nodeGate-${t}`);
+      const nodePark = document.getElementById(`nodePark-${t}`);
+      const nodeHub = document.getElementById(`nodeHub-${t}`);
+      const nodeEntry = document.getElementById(`nodeEntry-${t}`);
+      const nodePost = document.getElementById(`nodePost-${t}`);
+
+      if (posText) {
+        posText.className = isDone ? "path-track-pos calibrated" : "path-track-pos calibrating";
+        posText.innerText = text;
+      }
+
+      if (badgeEl) {
+        badgeEl.innerText = badgeText;
+        if (isDone) {
+          badgeEl.className = "lane-status ready";
+        } else if (step === 'ejecting') {
+          badgeEl.className = "lane-status warning";
+        } else if (step === 'insert_filament') {
+          badgeEl.className = "lane-status loading";
+        } else {
+          badgeEl.className = "lane-status calibrating";
+        }
+      }
+
+      if (strand) {
+        strand.classList.remove("active-sweep");
+        strand.style.transition = "width 0.35s ease";
+        strand.style.width = `${pct}%`;
+      }
+      if (tip) tip.style.display = "block";
+
+      if (nodeEntry) nodeEntry.className = "path-node entry";
+      if (nodePost) nodePost.className = "path-node postgear";
+
+      if (phase === 0 && step === 'ejecting') {
+        if (nodeGate) nodeGate.className = "path-node gate pulse-active";
+        if (nodePark) nodePark.className = "path-node park";
+        if (nodeHub) nodeHub.className = "path-node hub";
+      } else if (phase === 1) {
+        if (step === 'insert_filament') {
+          if (nodeGate) nodeGate.className = "path-node gate pulse-active";
+          if (nodePark) nodePark.className = "path-node park";
+          if (nodeHub) nodeHub.className = "path-node hub";
+        } else if (step === 'calibrating_sweep' || step === 'seeking_hub') {
+          if (nodeGate) nodeGate.className = "path-node gate active";
+          if (nodePark) nodePark.className = "path-node park active";
+          if (nodeHub) nodeHub.className = "path-node hub pulse-active";
+        } else if (step === 'hub_release') {
+          if (nodeGate) nodeGate.className = "path-node gate active";
+          if (nodePark) nodePark.className = "path-node park";
+          if (nodeHub) nodeHub.className = "path-node hub active";
+        } else if (step === 'parked') {
+          if (nodeGate) nodeGate.className = "path-node gate active";
+          if (nodePark) nodePark.className = "path-node park active";
+          if (nodeHub) nodeHub.className = "path-node hub";
+        }
+      } else if (phase === 2) {
+        if (step === 'probing_gate' || step === 'gate_hit') {
+          if (nodeHub) nodeHub.className = "path-node hub";
+          if (nodePark) nodePark.className = "path-node park";
+          if (nodeGate) nodeGate.className = "path-node gate pulse-active";
+        } else if (step === 'complete') {
+          if (nodeHub) nodeHub.className = "path-node hub";
+          if (nodePark) nodePark.className = "path-node park active";
+          if (nodeGate) nodeGate.className = "path-node gate active";
+        }
+      }
+
+      if (calibrationResetTimers[t]) {
+        clearTimeout(calibrationResetTimers[t]);
+        delete calibrationResetTimers[t];
+      }
+
+      if (isDone) {
+        calibrationResetTimers[t] = setTimeout(() => {
+          laneCalibrationState[t] = null;
+          refreshLaneTracks();
+        }, 7000);
+      }
+    }
+
+    function handleGcodeResponse(rawMsg) {
+      if (!rawMsg || typeof rawMsg !== 'string') return;
+      const isError = rawMsg.startsWith("!!");
+      const msg = rawMsg.replace(/^\/\/\s*/, '').replace(/^!!\s*/, '').trim();
+
+      if (isError || /error|never reached the hub|not parked|clear the path/i.test(msg)) {
+        if (/\[CALIBRATE\]|ACE_LANE_NORMALIZE|\[PARK\]|feed/i.test(msg)) {
+          for (let t = 0; t < 4; t++) {
+            if (laneCalibrationState[t] && !laneCalibrationState[t].isDone) {
+              laneCalibrationState[t] = null;
+            }
+          }
+          refreshLaneTracks();
+        }
+      }
+
+      // ONE-SWOOP Calibration Protocol Handlers
+      // 1. Occupied -> Ejecting
+      const mOcc = msg.match(/\[CALIBRATE\]\s+Lane\s+(\d+)\s+occupied\.\s+Ejecting/i);
+      if (mOcc) {
+        const t = parseInt(mOcc[1]);
+        setCalibrationState(t, 0, 'ejecting', 'EJECTING...', 10, false, 'EJECTING...');
+        log(`Lane ${t} occupied. Ejecting filament before calibration...`, 'info');
+        return;
+      }
+
+      // 2. Confirmed empty -> Armed / Please insert filament
+      const mArm = msg.match(/\[CALIBRATE\]\s+Lane\s+(\d+)\s+(?:confirmed empty\.\s+)?Armed for ONE-SWOOP.*insert filament/i);
+      if (mArm) {
+        const t = parseInt(mArm[1]);
+        setCalibrationState(t, 1, 'insert_filament', 'PLEASE INSERT FILAMENT...', 4, false, 'INSERT FILAMENT');
+        log(`Lane ${t} armed for ONE-SWOOP calibration. Please insert filament into Lane ${t}.`, 'info');
+        return;
+      }
+
+      // 3. Inserted -> Driving to hub switch (Sweep)
+      const mSweep = msg.match(/\[CALIBRATE\]\s+T(\d+)\s+inserted.*Driving.*to hub switch/i);
+      if (mSweep) {
+        const t = parseInt(mSweep[1]);
+        setCalibrationState(t, 1, 'calibrating_sweep', 'DRIVING TO HUB SWITCH...', 52, false, 'CALIBRATING SWEEP');
+        log(`T${t} inserted! Driving continuously to hub switch...`, 'info');
+        return;
+      }
+
+      // 4. One-Swoop Result
+      const mResult = msg.match(/\[CALIBRATE\]\s+===\s+T(\d+)\s+ONE-SWOOP RESULT\s+===/i);
+      if (mResult) {
+        const t = parseInt(mResult[1]);
+        log(`T${t} ONE-SWOOP measurement complete.`, 'info');
+        return;
+      }
+
+      // 5. Successfully parked at datum
+      const mParkedOneSwoop = msg.match(/\[CALIBRATE\]\s+T(\d+)\s+successfully parked at\s+(\d+)\s*mm datum/i);
+      if (mParkedOneSwoop) {
+        const t = parseInt(mParkedOneSwoop[1]);
+        const datum = parseInt(mParkedOneSwoop[2]);
+        const len = datum + 50;
+        setCalibrationState(t, 2, 'complete', `CALIBRATED · PTFE ${len}mm`, 36, true, `CALIBRATED · PTFE ${len}mm`);
+        log(`T${t} successfully calibrated & parked! PTFE tube: ${len}mm (Dynamic Park Datum: ${datum}mm)`, 'success');
+        return;
+      }
+
+      // [CALIBRATE] === STARTING 2-PHASE ROAST CALIBRATION FOR T0 ===
+      const mStart = msg.match(/\[CALIBRATE\].*STARTING.*FOR\s+T(\d)/i);
+      if (mStart) {
+        const t = parseInt(mStart[1]);
+        setCalibrationState(t, 1, 'seeking_hub', '[1/2] SEEKING HUB SENSOR...', 52);
+        log(`T${t} Calibration Phase 1/2: Seeking Hub switch...`, 'info');
+        return;
+      }
+
+      // [PARK] T0: hub released after 10mm of backoff
+      const mHubRel = msg.match(/\[PARK\]\s+T(\d):.*hub released after\s+(\d+)mm/i);
+      if (mHubRel) {
+        const t = parseInt(mHubRel[1]);
+        setCalibrationState(t, 1, 'hub_release', `[1/2] HUB DETECTED (-${mHubRel[2]}mm)`, 44);
+        return;
+      }
+
+      // [PARK] T0 parked 50mm short of the hub (sensor-defined, repeatable).
+      const mParked = msg.match(/\[PARK\]\s+T(\d)\s+parked\s+(\d+)mm short/i);
+      if (mParked) {
+        const t = parseInt(mParked[1]);
+        const sv = lastStatusCache?.save_variables?.variables || {};
+        const ptfe = getSharedPtfeLength(sv, t);
+        setCalibrationState(t, 2, 'complete', `CALIBRATED · PTFE ${ptfe}mm`, 36, true);
+        log(`T${t} calibrated & parked at Hub datum! PTFE tube: ${ptfe}mm`, 'success');
+        return;
+      }
+
+      // [CALIBRATE] Phase 1 complete (Park Datum 0mm). Starting Phase 2/2: Probing PTFE tube to ACE Gate...
+      const mPhase2 = msg.match(/\[CALIBRATE\].*Phase 2\/2.*Probing PTFE.*T(\d)/i) || msg.match(/\[DRYROLL\]\s+measuring\s+T(\d):/i);
+      if (mPhase2) {
+        const t = parseInt(mPhase2[1]);
+        setCalibrationState(t, 2, 'probing_gate', '[2/2] PROBING ACE GATE SENSOR...', 36);
+        log(`T${t} Calibration Phase 2/2: Stepping back toward ACE gate to measure PTFE tube...`, 'info');
+        return;
+      }
+
+      // [DRYROLL] T0 probing gate: travelled 25mm
+      const mProbe = msg.match(/\[DRYROLL\]\s+T(\d)\s+probing gate:\s+travelled\s+(\d+)mm/i);
+      if (mProbe) {
+        const t = parseInt(mProbe[1]);
+        const mm = parseInt(mProbe[2]);
+        const pct = Math.max(4, 36 - (mm / 1000) * 32);
+        setCalibrationState(t, 2, 'probing_gate', `[2/2] PROBING GATE... (-${mm}mm)`, pct);
+        return;
+      }
+
+      // [DRYROLL] T0 gate reached at 975mm - restoring to park
+      const mGateReach = msg.match(/\[DRYROLL\]\s+T(\d)\s+gate reached at\s+(\d+)mm/i);
+      if (mGateReach) {
+        const t = parseInt(mGateReach[1]);
+        setCalibrationState(t, 2, 'gate_hit', `[2/2] GATE DETECTED (${mGateReach[2]}mm) · RESTORING`, 4);
+        return;
+      }
+
+      // [CALIBRATE] T0 Gate detected at ~975mm (PTFE tube calibrated, margin 100mm) - Max Roast Range: 850mm
+      const mCalDone = msg.match(/\[CALIBRATE\]\s+T(\d)\s+Gate detected at ~(\d+)mm.*Max Roast Range:\s+(\d+)mm/i);
+      if (mCalDone) {
+        const t = parseInt(mCalDone[1]);
+        const gateDist = mCalDone[2];
+        const usable = mCalDone[3];
+        setCalibrationState(t, 2, 'complete', `CALIBRATED · PTFE ${usable}mm (RESTORED)`, 36, true);
+        log(`T${t} full roast calibration complete! PTFE tube length: ~${gateDist}mm (Max Roast Range: ${usable}mm)`, 'success');
+        return;
+      }
+
+      // [CALIBRATE] T0 Park Datum anchored at Hub (0mm) - PTFE: 934mm (Usable Sweep: 834mm)
+      const mCalShared = msg.match(/\[CALIBRATE\]\s+T(\d)\s+Park Datum anchored.*PTFE:\s+(\d+)mm/i);
+      if (mCalShared) {
+        const t = parseInt(mCalShared[1]);
+        const tubeLen = mCalShared[2];
+        setCalibrationState(t, 2, 'complete', `CALIBRATED · PTFE ${tubeLen}mm`, 36, true);
+        log(`T${t} calibrated at Hub datum! PTFE tube: ${tubeLen}mm`, 'success');
+        return;
+      }
+
+      // [PTFE] T0 PTFE length manually set to 934.0mm
+      const mPtfeSet = msg.match(/\[PTFE\]\s+T(\d)\s+PTFE length manually set to\s+([\d\.]+)mm/i);
+      if (mPtfeSet) {
+        const t = parseInt(mPtfeSet[1]);
+        const len = Math.round(parseFloat(mPtfeSet[2]));
+        log(`T${t} PTFE tube length updated to ${len}mm.`, 'success');
+        return;
+      }
+    }
+
+    function getLanePtfeLength(sv, tool) {
+      // 1. Specific tool calibrated or manually set distance
+      if (tool !== undefined && Array.isArray(sv?.ace_cal_park_to_hub)) {
+        const val = parseFloat(sv.ace_cal_park_to_hub[tool]);
+        if (val > 0) return Math.round(val);
+      }
+      // 2. Fall back to machine geometry (park->entry minus hub->entry)
+      const p2e = parseFloat(sv?.ace_park_to_entry || 1490);
+      const h2e = parseFloat(sv?.ace_cal_hub_to_entry || 555.9);
+      const tube = Math.round(p2e - h2e);
+      return tube > 0 ? tube : 934;
+    }
+    const getSharedPtfeLength = getLanePtfeLength;
+
+    function updateLanePathTrack(idx, isPresent, isLoaded, colorHex) {
+      const strand = document.getElementById(`pathStrand-${idx}`);
+      const tip = document.getElementById(`pathTip-${idx}`);
+      const posText = document.getElementById(`pathPosText-${idx}`);
+      const nodeGate = document.getElementById(`nodeGate-${idx}`);
+      const nodePark = document.getElementById(`nodePark-${idx}`);
+      const nodeHub = document.getElementById(`nodeHub-${idx}`);
+      const nodeEntry = document.getElementById(`nodeEntry-${idx}`);
+      const nodePost = document.getElementById(`nodePost-${idx}`);
+
+      if (!strand) return;
+
+      const hex = colorHex ? (colorHex.startsWith('#') ? colorHex : `#${colorHex}`) : 'var(--primary)';
+      strand.style.background = hex;
+      strand.style.boxShadow = `0 0 10px ${hex}80`;
+
+      // If active calibration is currently animating this lane, do not overwrite it with static state
+      if (laneCalibrationState[idx]) {
+        return;
+      }
+
+      const sv = lastStatusCache?.save_variables?.variables || {};
+
+      if (!isPresent) {
+        if (strand) strand.style.width = "0%";
+        if (tip) tip.style.display = "none";
+        if (posText) {
+          posText.className = "path-track-pos";
+          posText.innerHTML = `EMPTY · ${formatPtfeBadgeHtml(sv, idx)}`;
+        }
+        [nodeGate, nodePark, nodeHub, nodeEntry, nodePost].forEach(n => {
+          if (n) n.className = n.className.replace(/\b(active|pulse-active)\b/g, "").trim();
+        });
+        return;
+      }
+
+      if (tip) tip.style.display = "block";
+      if (strand && colorHex) {
+        strand.style.backgroundColor = colorHex;
+        strand.style.boxShadow = `0 0 10px ${colorHex}88`;
+      }
+
+      function setNodes(gate, park, hub, entry, post) {
+        if (nodeGate) nodeGate.className = gate ? "path-node gate active" : "path-node gate";
+        if (nodePark) nodePark.className = park ? "path-node park active" : "path-node park";
+        if (nodeHub) nodeHub.className = hub ? "path-node hub active" : "path-node hub";
+        if (nodeEntry) nodeEntry.className = entry ? "path-node entry active" : "path-node entry";
+        if (nodePost) nodePost.className = post ? "path-node postgear active" : "path-node postgear";
+      }
+
+      // If active calibration macro is managing this lane, honor its visual state
+      if (laneCalibrationState[idx]) {
+        return;
+      }
+
+      if (isLoaded) {
+        const postgearOn = Boolean(lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected);
+        const entryOn = Boolean(lastStatusCache["filament_switch_sensor toolhead_entry"]?.filament_detected);
+        strand.classList.remove("active-sweep");
+        strand.style.transition = "width 0.4s ease";
+
+        if (postgearOn) {
+          strand.style.width = "100%";
+          if (posText) posText.innerText = "TOOLHEAD · NOZZLE (PRINTING)";
+          setNodes(true, true, true, true, true);
+        } else if (entryOn) {
+          strand.style.width = "82%";
+          if (posText) posText.innerText = "TOOLHEAD · ENTRY SENSOR";
+          setNodes(true, true, true, true, false);
+        } else {
+          strand.style.width = "65%";
+          if (posText) posText.innerText = "TOOLHEAD · BOWDEN";
+          setNodes(true, true, true, false, false);
+        }
+      } else {
+        const slot = aceCache.slots ? aceCache.slots[idx] : null;
+        const isFeeding = Boolean(slot && (slot.status === "feeding" || slot.status_code === 1 || slot.status_detail === "feeding"));
+        const isPreload = Boolean(slot && (slot.status === "preload" || slot.status_code === 5 || slot.status_detail === "preload" || slot.status_detail === "identifying"));
+        const isUnwinding = Boolean(slot && (slot.status === "unwinding" || slot.status_code === 2 || slot.status_detail === "rollback"));
+
+        if (isFeeding || isPreload) {
+          strand.classList.add("active-sweep");
+          strand.style.transition = "width 0.4s ease";
+          strand.style.width = isPreload ? "42%" : "48%";
+          if (posText) {
+            posText.className = "path-track-pos calibrating";
+            posText.innerHTML = `<span style="color:#38bdf8; font-weight:700;">▶ ${isPreload ? 'PRELOADING' : 'FEEDING'} FILAMENT...</span>`;
+          }
+          setNodes(true, true, false, false, false);
+        } else if (isUnwinding) {
+          strand.classList.add("active-sweep");
+          strand.style.transition = "width 0.4s ease";
+          strand.style.width = "18%";
+          if (posText) {
+            posText.className = "path-track-pos calibrating";
+            posText.innerHTML = `<span style="color:#fb7185; font-weight:700;">◀ RETRACTING FILAMENT...</span>`;
+          }
+          setNodes(true, false, false, false, false);
+        } else {
+          strand.classList.remove("active-sweep");
+          strand.style.transition = "width 0.4s ease";
+          strand.style.width = "36%";
+          if (posText) {
+            const ptfe = getSharedPtfeLength(sv, idx);
+            const parkPos = Math.max(0, ptfe - 50);
+            const deltaToHub = ptfe - parkPos; // 50mm
+            posText.className = "path-track-pos";
+            posText.innerHTML = `<span style="color:#a5b4fc; font-weight:600;">PARKED (${parkPos}mm)</span> · <span style="color:#94a3b8; font-size:11px;">Δ ${deltaToHub}mm to Hub</span> · ${formatPtfeBadgeHtml(sv, idx)}`;
+          }
+          setNodes(true, true, false, false, false);
+        }
+      }
+    }
+
+    let roastAnimTimer = null;
+
+    function cleanupRoastAnimation() {
+      if (roastAnimTimer) {
+        clearInterval(roastAnimTimer);
+        roastAnimTimer = null;
+      }
+      [0, 1, 2, 3].forEach(i => {
+        const c = document.getElementById(`slot-${i}`);
+        if (c) {
+          c.classList.remove("roast-active");
+          const cir = c.querySelector(".spool-circle");
+          if (cir) cir.classList.remove("spinning-fwd", "spinning-rev");
+        }
+        const disc = document.getElementById(`roastSpool${i}`);
+        if (disc) disc.classList.remove("spinning", "spinning-rev");
+        const str = document.getElementById(`pathStrand-${i}`);
+        if (str) {
+          str.classList.remove("active-sweep");
+          str.style.transition = "width 0.4s ease";
+        }
+      });
+      refreshLaneTracks();
+    }
+
+    function tickRoastAnimation() {
+      const now = performance.now();
+      const sv = lastStatusCache?.save_variables?.variables || {};
+
+      let activeTool = -1;
+      const postgearOn = (lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+                         (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
+      if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
+        activeTool = mmuCache.tool;
+      } else if (mmuCache.gate !== undefined && mmuCache.gate >= 0 && postgearOn) {
+        activeTool = mmuCache.gate;
+      }
+
+      // Manual test agitation state (10s cycle)
+      let isAgitating = manualAgitating;
+      let strokeRatio = 0;
+      let isWinding = false;
+      if (manualAgitating && typeof manualAgitateStart !== 'undefined' && manualAgitateStart > 0) {
+        const elapsed = (now - manualAgitateStart) / 1000;
+        if (elapsed >= 10) {
+          manualAgitating = false;
+          manualAgitateStart = 0;
+          isAgitating = false;
+        } else {
+          const t = (elapsed % 3) / 3;
+          strokeRatio = (1 - Math.cos(t * 2 * Math.PI)) / 2;
+          isWinding = (t < 0.5);
+        }
+      } else if (dryrollActiveCache) {
+        const t = ((now / 1000) % 3) / 3;
+        strokeRatio = (1 - Math.cos(t * 2 * Math.PI)) / 2;
+        isWinding = (t < 0.5);
+      }
+
+      [0, 1, 2, 3].forEach(idx => {
+        const slot = aceCache.slots ? aceCache.slots[idx] : null;
+        const isPresent = Boolean(slot && slot.status && slot.status !== "empty");
+        const isLoaded = (idx === activeTool);
+
+        const card = document.getElementById(`slot-${idx}`);
+        const circleEl = card ? card.querySelector(".spool-circle") : null;
+        const disc = document.getElementById(`roastSpool${idx}`);
+        const strand = document.getElementById(`pathStrand-${idx}`);
+        const posText = document.getElementById(`pathPosText-${idx}`);
+        const chk = document.getElementById(`roastLaneT${idx}`);
+        const isLaneRoasting = Boolean(chk && chk.checked);
+
+        if (card) {
+          card.classList.toggle("roast-active", isLaneRoasting && (Boolean(dryrollActiveCache) || Boolean(manualAgitating)));
+        }
+
+        // Hardware motion check: feeding, preloading, unwinding, or rollback
+        const isSlotMoving = Boolean(slot && (slot.status === "feeding" || slot.status === "unwinding" || slot.status === "preload" || slot.status_code === 1 || slot.status_code === 2 || slot.status_code === 5 || slot.status_detail === "preload" || slot.status_detail === "feeding" || slot.status_detail === "rollback" || slot.status_detail === "identifying"));
+        const isSlotUnwinding = Boolean(slot && (slot.status === "unwinding" || slot.status_code === 2 || slot.status_detail === "rollback"));
+        const isSlotPreload = Boolean(slot && (slot.status === "preload" || slot.status_code === 5 || slot.status_detail === "preload" || slot.status_detail === "identifying"));
+
+        // PRIORITY 1: Physical hardware motion always animates regardless of roast toggle
+        if (isSlotMoving && isPresent && !isLoaded) {
+          if (strand) {
+            strand.classList.add("active-sweep");
+            strand.style.transition = "width 0.4s ease";
+            strand.style.width = isSlotPreload ? "42%" : (isSlotUnwinding ? "18%" : "48%");
+          }
+          if (posText) {
+            posText.className = "path-track-pos calibrating";
+            if (isSlotPreload) {
+              posText.innerHTML = `<span style="color:#38bdf8; font-weight:700;">▶ PRELOADING</span> · In Bowden Tube`;
+            } else if (isSlotUnwinding) {
+              posText.innerHTML = `<span style="color:#fb7185; font-weight:700;">◀ RETRACTING</span> · Pulling Back`;
+            } else {
+              posText.innerHTML = `<span style="color:#38bdf8; font-weight:700;">▶ FEEDING</span> · Advancing to Hub`;
+            }
+          }
+          if (circleEl) {
+            if (isSlotUnwinding) {
+              circleEl.classList.add("spinning-rev");
+              circleEl.classList.remove("spinning-fwd");
+            } else {
+              circleEl.classList.add("spinning-fwd");
+              circleEl.classList.remove("spinning-rev");
+            }
+          }
+          if (disc) {
+            if (isSlotUnwinding) {
+              disc.classList.add("spinning-rev");
+              disc.classList.remove("spinning");
+            } else {
+              disc.classList.add("spinning");
+              disc.classList.remove("spinning-rev");
+            }
+          }
+          return;
+        }
+
+        const isParked = isPresent && slot.status === "ready" && !isSlotMoving && !isLoaded;
+        // PRIORITY 2: If lane is not roasting, not present, loaded, OR NOT PARKED (inhibited)
+        if (!isPresent || isLoaded || !isLaneRoasting || !isParked) {
+          if (circleEl) circleEl.classList.remove("spinning-fwd", "spinning-rev");
+          if (disc) disc.classList.remove("spinning", "spinning-rev");
+          if (laneCalibrationState[idx]) return;
+          if (strand) {
+            strand.classList.remove("active-sweep");
+            strand.style.transition = "width 0.4s ease";
+            strand.style.width = "36%";
+          }
+          if (posText && isPresent && !isLoaded) {
+            const ptfe = getSharedPtfeLength(sv, idx);
+            const parkPos = Math.max(0, ptfe - 50);
+            const deltaToHub = ptfe - parkPos; // 50mm
+            posText.className = "path-track-pos";
+            posText.innerHTML = `<span style="color:#a5b4fc; font-weight:600;">PARKED (${parkPos}mm)</span> · <span style="color:#94a3b8; font-size:11px;">Δ ${deltaToHub}mm to Hub</span> · ${formatPtfeBadgeHtml(sv, idx)}`;
+          }
+          return;
+        }
+
+        // PRIORITY 3: Active manual test agitation (10s test jog)
+        if (isAgitating) {
+          if (strand) {
+            strand.classList.add("active-sweep");
+            const maxStroke = 120;
+            const currentOffset = Math.round(-maxStroke * strokeRatio);
+            const pct = Math.max(6, Math.min(36, 4 + ((850 + currentOffset) / 850) * 32));
+            strand.style.transition = "width 0.1s linear";
+            strand.style.width = `${pct.toFixed(1)}%`;
+          }
+          if (posText) {
+            const currentOffset = Math.round(-120 * strokeRatio);
+            if (isWinding) {
+              posText.innerHTML = `<span style="color:#818cf8; font-weight:700;">◀ AGITATING</span> · ${currentOffset}mm`;
+            } else {
+              posText.innerHTML = `<span style="color:#34d399; font-weight:700;">▶ AGITATING</span> · ${currentOffset}mm`;
+            }
+          }
+          if (circleEl) {
+            if (isWinding) {
+              circleEl.classList.add("spinning-rev");
+              circleEl.classList.remove("spinning-fwd");
+            } else {
+              circleEl.classList.add("spinning-fwd");
+              circleEl.classList.remove("spinning-rev");
+            }
+          }
+          if (disc) {
+            if (isWinding) {
+              disc.classList.add("spinning-rev");
+              disc.classList.remove("spinning");
+            } else {
+              disc.classList.add("spinning");
+              disc.classList.remove("spinning-rev");
+            }
+          }
+        }
+        // PRIORITY 4: Active physical hardware motion from Klipper periodic dryroll tick
+        else if (dryrollActiveCache) {
+          if (strand) {
+            strand.classList.add("active-sweep");
+            strand.style.transition = "width 0.2s linear";
+            strand.style.width = isWinding ? "20%" : "34%";
+          }
+          if (posText) {
+            posText.innerHTML = isWinding
+              ? `<span style="color:#818cf8; font-weight:700;">◀ REWINDING</span> (Roast Sweep)`
+              : `<span style="color:#34d399; font-weight:700;">▶ ADVANCING</span> (Roast Sweep)`;
+          }
+          if (circleEl) {
+            if (isWinding) {
+              circleEl.classList.add("spinning-rev");
+              circleEl.classList.remove("spinning-fwd");
+            } else {
+              circleEl.classList.add("spinning-fwd");
+              circleEl.classList.remove("spinning-rev");
+            }
+          }
+          if (disc) {
+            if (isWinding) {
+              disc.classList.add("spinning-rev");
+              disc.classList.remove("spinning");
+            } else {
+              disc.classList.add("spinning");
+              disc.classList.remove("spinning-rev");
+            }
+          }
+        }
+        // Resting at Park between periodic sweeps
+        else {
+          if (circleEl) circleEl.classList.remove("spinning-fwd", "spinning-rev");
+          if (disc) disc.classList.remove("spinning", "spinning-rev");
+          if (strand) {
+            strand.classList.remove("active-sweep");
+            strand.style.transition = "width 0.4s ease";
+            strand.style.width = "36%";
+          }
+          if (posText) {
+            const ptfe = getSharedPtfeLength(sv, idx);
+            const parkPos = Math.max(0, ptfe - 50);
+            const deltaToHub = ptfe - parkPos; // 50mm
+            posText.className = "path-track-pos";
+            posText.innerHTML = `<span style="color:#a5b4fc; font-weight:600;">PARKED (${parkPos}mm)</span> · <span style="color:#94a3b8; font-size:11px;">Δ ${deltaToHub}mm to Hub</span> · ${formatPtfeBadgeHtml(sv, idx)}`;
+          }
+        }
+      });
+    }
+
+    function updateRoastDeckUI() {
+      const ds = aceCache.dryer_status || {};
+      const isHeating = (ds.status === "drying");
+      const isRoasting = Boolean(dryrollActiveCache);
+      const isAgitating = Boolean(manualAgitating);
+
+      const rCard = document.getElementById("roastCard");
+      const rStage = document.getElementById("roastStage");
+      const rBadge = document.getElementById("roastStatusBadge");
+      const rDot = document.getElementById("roastStatusDot");
+      const rText = document.getElementById("roastStatusText");
+      const rTimer = document.getElementById("roastTimerDisplay");
+      const drState = document.getElementById("dryrollState");
+
+      const btnDryer = document.getElementById("btnDryerToggle");
+      const btnDryerText = document.getElementById("btnDryerToggleText");
+      const iconDryer = document.getElementById("iconDryerToggle");
+      const rotisChk = document.getElementById("roastRotisserieToggle");
+      const rotisLbl = document.getElementById("roastRotisserieLabel");
+
+      if (drState) {
+        drState.innerText = (isRoasting || isAgitating) ? "Rotisserie Active (300s)" : "Rotisserie Inactive";
+      }
+
+      const stageStatus = document.getElementById("roastStageStatusText");
+      if (stageStatus) {
+        if (isHeating) {
+          if (isRoasting || isAgitating) {
+            stageStatus.innerText = "HEATING & ROTATING";
+            stageStatus.style.color = "#fb923c";
+            stageStatus.style.borderColor = "rgba(249,115,22,0.4)";
+            stageStatus.style.background = "rgba(249,115,22,0.18)";
+          } else {
+            stageStatus.innerText = "HEATING (STATIONARY)";
+            stageStatus.style.color = "#fbbf24";
+            stageStatus.style.borderColor = "rgba(245,158,11,0.4)";
+            stageStatus.style.background = "rgba(245,158,11,0.18)";
+          }
+        } else {
+          stageStatus.innerText = "CHAMBER STANDBY";
+          stageStatus.style.color = "var(--text-muted)";
+          stageStatus.style.borderColor = "rgba(255,255,255,0.1)";
+          stageStatus.style.background = "rgba(255,255,255,0.05)";
+        }
+      }
+
+      const sv = lastStatusCache?.save_variables?.variables || {};
+      const autoDryStatus = lastStatusCache["gcode_macro ACE_AUTODRY"];
+      const isAutoDryActive = autoDryStatus ? Boolean(autoDryStatus.active) : Boolean(sv.ace_autodry_active);
+      const targetRh = autoDryStatus?.target_rh ?? sv.ace_autodry_target_rh ?? 20;
+
+      if (isAutoDryActive) {
+        if (!window.hasInitAutoDryInputs) {
+          window.hasInitAutoDryInputs = true;
+          if (currentDryerMode !== 2 && typeof setDryerMode === "function") {
+            setDryerMode(2);
+          }
+          if (!window.hasUserEditedMode2) {
+            const tIn = document.getElementById("roastTempInputM2");
+            const rIn = document.getElementById("roastRhInputM2");
+            const iIn = document.getElementById("roastIntervalInputM2");
+            if (tIn) tIn.value = autoDryStatus?.temp ?? sv.ace_autodry_temp ?? 45;
+            if (rIn) rIn.value = targetRh;
+            if (iIn) iIn.value = autoDryStatus?.interval ?? sv.ace_autodry_interval ?? 10;
+          }
+        }
+        if (rCard) {
+          rCard.classList.add("active-heat");
+          rCard.classList.remove("active-roast");
+        }
+        if (rStage) rStage.classList.add("heating");
+        if (rBadge) rBadge.className = "roast-badge active-heat";
+        if (rDot) rDot.className = "heating-dot";
+        if (rDot) rDot.style.background = "var(--accent-cyan)";
+        if (rDot) rDot.style.boxShadow = "0 0 8px var(--accent-cyan)";
+        if (rBadge) rBadge.style.color = "var(--accent-cyan)";
+        if (rBadge) rBadge.style.borderColor = "rgba(6,182,212,0.3)";
+        if (rBadge) rBadge.style.background = "rgba(6,182,212,0.12)";
+        if (rText) rText.innerText = `AUTO-DRY ACTIVE · ≤${targetRh}% RH`;
+        if (rTimer) rTimer.innerText = "AUTO";
+
+        if (btnDryer) {
+          btnDryer.style.background = "linear-gradient(135deg, #e11d48 0%, #be123c 100%)";
+          btnDryer.style.borderColor = "#be123c";
+          btnDryer.style.color = "#ffffff";
+        }
+        if (btnDryerText) btnDryerText.innerText = "Stop Auto-Dry";
+
+      } else if (isHeating) {
+        // Reset overrides
+        if (rDot) rDot.style = "";
+        if (rBadge) rBadge.style = "";
+
+        if (isRoasting || isAgitating) {
+          if (rCard) {
+            rCard.classList.remove("active-heat");
+            rCard.classList.add("active-roast");
+          }
+          if (rStage) rStage.classList.add("heating");
+          if (rBadge) rBadge.className = "roast-badge active";
+          if (rDot) rDot.className = "pulse-dot";
+          if (rText) rText.innerText = `ROASTING ACTIVE · ${ds.target_temp || 45}°C (ROTISSERIE ON)`;
+
+          if (rotisChk) rotisChk.checked = true;
+          if (rotisLbl) {
+            rotisLbl.innerText = "Rotisserie Active";
+            rotisLbl.style.color = "#fb923c";
+          }
+
+          if (!roastAnimTimer) {
+            roastAnimTimer = setInterval(tickRoastAnimation, 100);
+          }
+        } else {
+          if (roastAnimTimer) {
+            cleanupRoastAnimation();
+          }
+
+          if (rCard) {
+            rCard.classList.remove("active-roast");
+            rCard.classList.add("active-heat");
+          }
+          if (rStage) rStage.classList.add("heating");
+          if (rBadge) rBadge.className = "roast-badge heating";
+          if (rDot) rDot.className = "pulse-dot amber";
+          if (rText) rText.innerText = `HEATING · ${ds.target_temp || 45}°C (ROTISSERIE OFF)`;
+
+          if (rotisChk) rotisChk.checked = false;
+          if (rotisLbl) {
+            rotisLbl.innerText = "Stationary";
+            rotisLbl.style.color = "var(--text-muted)";
+          }
+
+          // Spools MUST NOT spin in Level 1 (heat only)
+          [0, 1, 2, 3].forEach(i => {
+            const disc = document.getElementById(`roastSpool${i}`);
+            if (disc) disc.classList.remove("spinning", "spinning-rev");
+            const card = document.getElementById(`slot-${i}`);
+            if (card) {
+              card.classList.remove("roast-active");
+              const cir = card.querySelector(".spool-circle");
+              if (cir) cir.classList.remove("spinning-fwd", "spinning-rev");
+            }
+          });
+        }
+
+        // Primary toggle button -> Stop Drying
+        if (btnDryer) {
+          btnDryer.style.background = "#ef4444";
+          btnDryer.style.borderColor = "#dc2626";
+          btnDryer.style.color = "#ffffff";
+        }
+        if (btnDryerText) btnDryerText.innerText = "Stop Drying (Turn Off)";
+        if (iconDryer) iconDryer.innerHTML = '<rect width="14" height="14" x="5" y="5" rx="2" fill="currentColor"/>';
+      }
+      // LEVEL 0: Heater OFF, Spool Rotation OFF (Cold / Idle)
+      else {
+        if (roastAnimTimer) {
+          cleanupRoastAnimation();
+        }
+
+        if (rCard) {
+          rCard.classList.remove("active-roast", "active-heat");
+        }
+        if (rStage) rStage.classList.remove("heating");
+        if (rBadge) rBadge.className = "roast-badge idle";
+        if (rDot) rDot.className = "idle-dot";
+        if (rText) rText.innerText = "IDLE · HEATER OFF";
+        if (rTimer) rTimer.innerText = "OFF";
+
+        // Primary toggle button -> Start Drying
+        if (btnDryer) {
+          if (currentDryerMode === 2) {
+            btnDryer.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+            btnDryer.style.borderColor = "#059669";
+            btnDryer.style.color = "#ffffff";
+          } else {
+            btnDryer.style.background = "linear-gradient(135deg, #f97316 0%, #ea580c 100%)";
+            btnDryer.style.borderColor = "#ea580c";
+            btnDryer.style.color = "#ffffff";
+          }
+        }
+        const rotate = rotisChk ? rotisChk.checked : true;
+        if (btnDryerText) {
+          if (currentDryerMode === 2) {
+            const rhVal = document.getElementById("roastRhInputM2")?.value || 20;
+            btnDryerText.innerText = "Start Auto-Dry (Maintain ≤" + rhVal + "% RH)";
+          } else {
+            btnDryerText.innerText = rotate ? "Start Drying (with Rotisserie)" : "Start Drying (Stationary)";
+          }
+        }
+        if (iconDryer) iconDryer.innerHTML = '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>';
+
+        // Spools MUST NOT spin in Level 0 (idle) unless hardware is actively feeding/moving
+        [0, 1, 2, 3].forEach(i => {
+          const slot = aceCache.slots ? aceCache.slots[i] : null;
+          const isSlotMoving = Boolean(slot && (slot.status === "feeding" || slot.status === "unwinding" || slot.status === "preload"));
+          if (!isSlotMoving) {
+            const disc = document.getElementById(`roastSpool${i}`);
+            if (disc) disc.classList.remove("spinning", "spinning-rev");
+            const card = document.getElementById(`slot-${i}`);
+            if (card) {
+              card.classList.remove("roast-active");
+              const cir = card.querySelector(".spool-circle");
+              if (cir) cir.classList.remove("spinning-fwd", "spinning-rev");
+            }
+          }
+        });
+      }
+
+      if (isHeating && rTimer && ds.remain_time !== undefined) {
+        const h = Math.floor(ds.remain_time / 3600);
+        const m = Math.floor((ds.remain_time % 3600) / 60);
+        rTimer.innerText = `${h}h ${m}m`;
+      } else if (!isHeating && rTimer) {
+        rTimer.innerText = "OFF";
+      }
+      refreshLaneTracks();
+    }
+
+    function refreshLaneTracks() {
+      if (!aceCache.slots) return;
+      let activeTool = -1;
+      const postgearOn = (lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+                         (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
+      if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
+        activeTool = mmuCache.tool;
+      } else if (mmuCache.gate !== undefined && mmuCache.gate >= 0 && postgearOn) {
+        activeTool = mmuCache.gate;
+      }
+
+      const ds = aceCache.dryer_status || {};
+      const isHeating = (ds.status === "drying");
+      const isRoasting = Boolean(dryrollActiveCache || manualAgitating);
+
+      aceCache.slots.forEach((slot, idx) => {
+        const isPresent = Boolean(slot && slot.status && slot.status !== "empty");
+        const isLoaded = (idx === activeTool);
+        
+        // ROAST PENDING PARK & GLOBAL DRYER STATUS REFLECTION
+        const isSlotMoving = Boolean(slot && (slot.status === "feeding" || slot.status === "unwinding" || slot.status === "preload"));
+        const isParked = isPresent && slot.status === "ready" && !isSlotMoving && !isLoaded;
+        const chk = document.getElementById(`roastLaneT${idx}`);
+        const pillTextEl = document.querySelector(`#slot-${idx} .lane-roast-pill span:last-child`);
+        const pillEl = document.querySelector(`#slot-${idx} .lane-roast-pill`);
+        
+        if (pillEl) {
+          pillEl.classList.remove("status-roast", "status-heating", "status-pending", "status-stationary");
+          pillEl.style.background = "";
+          pillEl.style.color = "";
+          pillEl.style.borderColor = "";
+
+          if (chk) {
+            chk.disabled = !isPresent || !isHeating;
+          }
+
+          const isLaneChecked = Boolean(chk && chk.checked);
+
+          if (!isPresent) {
+            // Empty lane
+            pillEl.classList.add("status-stationary");
+            if (pillTextEl) pillTextEl.innerText = "OFF";
+          } else if (!isHeating) {
+            // Chamber heater is OFF / Standby
+            pillEl.classList.add("status-stationary");
+            if (pillTextEl) pillTextEl.innerText = "OFF";
+          } else if (!isRoasting) {
+            // Chamber heater is ACTIVE, but rotisserie rotation is OFF (Stationary)
+            if (isLaneChecked) {
+              pillEl.classList.add("status-heating");
+              if (pillTextEl) pillTextEl.innerText = "HEATING";
+            } else {
+              pillEl.classList.add("status-stationary");
+              if (pillTextEl) pillTextEl.innerText = "OFF";
+            }
+          } else {
+            // Both chamber heating and rotisserie rotation are ACTIVE
+            if (isLaneChecked) {
+              if (isParked) {
+                pillEl.classList.add("status-roast");
+                if (pillTextEl) pillTextEl.innerText = "ROAST";
+              } else {
+                pillEl.classList.add("status-pending");
+                if (pillTextEl) pillTextEl.innerText = "PENDING PARK";
+              }
+            } else {
+              pillEl.classList.add("status-stationary");
+              if (pillTextEl) pillTextEl.innerText = "OFF";
+            }
+          }
+        }
+        
+        updateLanePathTrack(idx, isPresent, isLoaded, slotColorCache[idx]);
+      });
+    }
+
+    function handleStatusUpdate(status) {
+      lastStatusCache = Object.assign(lastStatusCache, status);
+
+      // Live multiACE calibration telemetry from Moonraker WebSocket
+      const aceCal = status.ace?.calibration || (status.ace_instance_0?.calibration);
+      if (aceCal) {
+        const calSlot = aceCal.slot;
+        if (calSlot !== undefined && calSlot !== null && calSlot >= 0 && calSlot < 4) {
+          if (aceCal.state === 'ejecting') {
+            setCalibrationState(calSlot, 0, 'ejecting', 'EJECTING...', 10, false, 'EJECTING...');
+          } else if (aceCal.state === 'waiting_insert') {
+            setCalibrationState(calSlot, 1, 'insert_filament', 'PLEASE INSERT FILAMENT (0mm DATUM)', 4, false, 'INSERT FILAMENT');
+          } else if (aceCal.state === 'sweeping') {
+            const prog = parseFloat(aceCal.progress_mm || 0);
+            const pct = Math.min(52, Math.max(4, 4 + (prog / 1200.0) * 48.0));
+            setCalibrationState(calSlot, 1, 'calibrating_sweep', `SWEEPING TO HUB (${Math.round(prog)}mm)...`, pct, false, 'CALIBRATING SWEEP');
+          } else if (aceCal.state === 'complete') {
+            const measured = aceCal.measured_ptfe || 918;
+            setCalibrationState(calSlot, 2, 'complete', `CALIBRATED · PTFE ${measured}mm`, 36, true, `CALIBRATED · PTFE ${measured}mm`);
+          } else if (aceCal.state === 'idle') {
+            if (laneCalibrationState[calSlot] && !laneCalibrationState[calSlot].isDone) {
+              laneCalibrationState[calSlot] = null;
+              refreshLaneTracks();
+            }
+          }
+        }
+      }
+
+      if (status.save_variables?.variables) {
+        const sv = status.save_variables.variables;
+        dryrollActiveCache = Boolean(sv.ace_dryroll_active);
+        if (sv.ace_dryroll_auto_resume !== undefined) {
+          const autoRes = Boolean(sv.ace_dryroll_auto_resume);
+          const chk = document.getElementById("roastAutoResumeToggle");
+          const lbl = document.getElementById("roastAutoResumeLabel");
+          if (chk && chk.checked !== autoRes) chk.checked = autoRes;
+          if (lbl) {
+            lbl.innerText = autoRes ? "Active" : "Off";
+            lbl.style.color = autoRes ? "#a5b4fc" : "var(--text-muted)";
+          }
+        }
+        updateRoastDeckUI();
+        refreshLaneTracks();
+      }
+      if (status.mmu) {
+        mmuCache = Object.assign(mmuCache, status.mmu);
+        refreshLaneTracks();
+      }
+
+      let aceRaw = null;
+      if (status.ace && (status.ace.aces || status.ace.slots || status.ace.temp !== undefined)) {
+        aceRaw = status.ace;
+      } else if (status.ace_instance_0 && (status.ace_instance_0.slots || status.ace_instance_0.temp !== undefined)) {
+        aceRaw = status.ace_instance_0;
+      } else if (status.ace) {
+        aceRaw = status.ace;
+      } else if (status.ace_instance_0) {
+        aceRaw = status.ace_instance_0;
+      }
+
+      if (aceRaw) {
+        const aceUpdate = (aceRaw.aces && Array.isArray(aceRaw.aces) && aceRaw.aces[0]) ? aceRaw.aces[0] : aceRaw;
+        if (aceRaw.temp !== undefined) aceCache.temp = aceRaw.temp;
+        if (aceUpdate.temp !== undefined) aceCache.temp = aceUpdate.temp;
+        if (aceRaw.humidity !== undefined) aceCache.humidity = aceRaw.humidity;
+        if (aceUpdate.humidity !== undefined) aceCache.humidity = aceUpdate.humidity;
+        if (aceRaw.dryer_status) {
+          aceCache.dryer_status = Object.assign(aceCache.dryer_status || {}, aceRaw.dryer_status);
+        }
+        if (aceUpdate.dryer_status) {
+          aceCache.dryer_status = Object.assign(aceCache.dryer_status || {}, aceUpdate.dryer_status);
+        }
+        if (aceUpdate.slots && Array.isArray(aceUpdate.slots)) {
+          aceUpdate.slots.forEach((s, idx) => {
+            if (s) {
+              aceCache.slots[idx] = Object.assign(aceCache.slots[idx] || {}, s);
+            }
+          });
+        }
+        for (const k in aceUpdate) {
+          if (k !== 'slots' && k !== 'dryer_status') {
+            aceCache[k] = aceUpdate[k];
+          }
+        }
+
+        const ace = aceCache;
+        if (ace.temp !== undefined) document.getElementById("dryerTemp").innerText = `${ace.temp}°C`;
+        if (ace.humidity !== undefined) document.getElementById("dryerHumidity").innerText = `${ace.humidity}%`;
+        if (ace.dryer_status?.target_temp !== undefined) {
+          document.getElementById("dryerTarget").innerText = `${ace.dryer_status.target_temp}°C`;
+        }
+
+        // Live Thermal Chamber & 3-Level Active Roast Deck Updates
+        updateRoastDeckUI();
+
+        let activeTool = -1;
+        const postgearOn = (status["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+                           (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
+        if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
+          activeTool = mmuCache.tool;
+        } else if (mmuCache.gate !== undefined && mmuCache.gate >= 0 && postgearOn) {
+          activeTool = mmuCache.gate;
+        }
+
+        if (ace.slots) {
+          ace.slots.forEach((slot, idx) => {
+            const card = document.getElementById(`slot-${idx}`);
+            if (!card) return;
+            const matEl = card.querySelector(".spool-material");
+            const skuEl = card.querySelector(".spool-sku");
+            const badgeEl = card.querySelector(".lane-status");
+            const actionsEl = card.querySelector(".lane-actions");
+            const tempEl = card.querySelector(".spool-temp");
+            const glowEl = card.querySelector(".spool-color-glow");
+            const circleEl = card.querySelector(".spool-circle");
+            const innerEl = card.querySelector(".spool-inner");
+
+            const isPresent = Boolean(slot.status && slot.status !== "empty");
+            const isLoaded = (idx === activeTool);
+
+            // Update Roast Bay disc
+            const rSpool = document.getElementById(`roastSpool${idx}`);
+            const rDesc = document.getElementById(`roastBayDesc${idx}`);
+
+            if (!isPresent) {
+              if (rSpool) rSpool.style.borderColor = "rgba(255, 255, 255, 0.15)";
+              if (rDesc) rDesc.innerText = "EMPTY · SPIN";
+              card.classList.remove("active-feed");
+              card.style.opacity = laneCalibrationState[idx] ? "1" : "0.85";
+              if (badgeEl) {
+                if (laneCalibrationState[idx]) {
+                  badgeEl.innerText = laneCalibrationState[idx].badgeText || "CALIBRATING";
+                  badgeEl.className = laneCalibrationState[idx].isDone ? "lane-status ready" : "lane-status calibrating";
+                } else {
+                  badgeEl.innerText = "EMPTY";
+                  badgeEl.className = "lane-status empty";
+                }
+              }
+              if (matEl) matEl.innerText = "Empty Lane";
+              if (skuEl) skuEl.innerText = "No Spool Inserted";
+              if (tempEl) tempEl.innerText = "— / —";
+              if (glowEl) {
+                glowEl.style.background = "transparent";
+                glowEl.style.boxShadow = "none";
+              }
+              if (circleEl) circleEl.style.borderColor = "rgba(255, 255, 255, 0.08)";
+              if (innerEl) innerEl.innerText = "—";
+              if (actionsEl) {
+                const isWaitingInsert = laneCalibrationState[idx]?.step === 'insert_filament' || 
+                                       (lastStatusCache.ace?.calibration?.slot === idx && lastStatusCache.ace?.calibration?.state === 'waiting_insert');
+                if (isWaitingInsert) {
+                  actionsEl.innerHTML = `<button class="btn btn-primary" style="pointer-events:none; background:#3b82f6; color:#fff; font-weight:600;" title="Armed for ONE-SWOOP! Please insert filament into Lane ${idx}">Insert Spool Now</button>`;
+                } else if (laneCalibrationState[idx] && !laneCalibrationState[idx].isDone) {
+                  actionsEl.innerHTML = `<button class="btn" style="pointer-events:none; background:rgba(99,102,241,0.2); color:#c7d2fe; font-weight:500;">${laneCalibrationState[idx].badgeText || 'Calibrating...'}</button>`;
+                } else {
+                  actionsEl.innerHTML = `<button class="btn" onclick="parkLaneAtHub(${idx})" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc;" title="Feed T${idx} to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>`;
+                }
+              }
+              updateLanePathTrack(idx, false, false, null);
+              return;
+            }
+
+            // Present slot
+            card.style.opacity = "1";
+            const gm = {
+              name: mmuCache?.gate_filament_name?.[idx] || "",
+              color: mmuCache?.gate_color?.[idx] || "",
+              temp: mmuCache?.gate_temperature?.[idx] || 0,
+              spool_id: mmuCache?.gate_spool_id?.[idx] !== undefined ? mmuCache.gate_spool_id[idx] : -1
+            };
+            const inv = lastStatusCache.save_variables?.variables?.ace_inventory_0?.[idx];
+
+            let mat = "";
+            if (gm?.name) {
+              mat = gm.name;
+            } else {
+              mat = slot.material || "";
+              if (slot.subtype && slot.subtype !== "Basic" && !mat.toLowerCase().includes(slot.subtype.toLowerCase())) {
+                mat = mat ? `${mat} ${slot.subtype}` : slot.subtype;
+              }
+              if (slot.brand && slot.brand !== "Unknown") {
+                mat = `${slot.brand} ${mat}`;
+              }
+              if (!mat || mat.trim() === "Unknown") {
+                if (mmuCache.gate_material && mmuCache.gate_material[idx]) {
+                  mat = mmuCache.gate_material[idx];
+                } else {
+                  mat = "Unassigned";
+                }
+              }
+            }
+            if (matEl) {
+              matEl.innerText = mat;
+              matEl.title = mat;
+            }
+
+            let colorHex = mmuCache.gate_color && mmuCache.gate_color[idx] ? mmuCache.gate_color[idx] : null;
+            if (!colorHex && slot.color && Array.isArray(slot.color) && (slot.color[0] || slot.color[1] || slot.color[2])) {
+              colorHex = slot.color.map(c => c.toString(16).padStart(2, '0')).join('');
+            }
+            if (colorHex) {
+              slotColorCache[idx] = colorHex;
+            } else if (slotColorCache[idx]) {
+              colorHex = slotColorCache[idx];
+            }
+
+            let cName = colorHexToName(colorHex);
+
+            // Center spool badge text
+            let centerText = "—";
+            let unassigned = (!mat || mat === "Unassigned" || mat === "No Spool Assigned" || mat === "Unknown");
+            if (!unassigned && gm && gm.spool_id && gm.spool_id > 0) {
+              centerText = `#${gm.spool_id}`;
+            } else if (!unassigned && slot.sku && slot.sku.startsWith("SM") && slot.sku.length <= 4) {
+              centerText = `#${slot.sku.replace("SM", "")}`;
+            } else if (!unassigned && slot.uid) {
+              centerText = `#${slot.uid.slice(-2).toUpperCase()}`;
+            } else if (!unassigned && colorHex) {
+              centerText = `#${colorHex.slice(0, 2).toUpperCase()}`;
+            } else {
+              centerText = `T${idx}`;
+              colorHex = null;
+            }
+            if (innerEl) innerEl.innerText = centerText;
+
+            let tagInfo = "";
+            const isManualSpool = Boolean(gm && gm.spool_id && gm.spool_id > 0);
+            if (isManualSpool) {
+              const tagNote = slot.tag_format === "openspool" ? " (NFC Tag)" : (slot.tag_format === "bambu" ? " (Bambu RFID)" : "");
+              tagInfo = `Spool #${gm.spool_id} · SKU: SM${gm.spool_id}${tagNote}`;
+            } else {
+              const isBambu = slot.tag_format === "bambu" || slot.brand === "Bambu Lab" || gm?.name?.toLowerCase().includes("bambu") || (slot.uid && slot.uid.length === 8 && !(slot.sku && slot.sku.startsWith("SM")));
+              if (isBambu) {
+                const uidStr = slot.uid || (slot.sku ? slot.sku.replace('SM', '') : '');
+                tagInfo = `Bambu RFID · UID: ${uidStr}`;
+              } else if (slot.tag_format === "openspool" || slot.sku === "OPENSPOOL") {
+                const brand = (inv && inv.brand) ? `${inv.brand} · ` : "";
+                tagInfo = `OpenSpool · ${brand}UID: ${slot.uid || 'NFC'}`;
+              } else if (slot.tag_format === "anycubic" || (slot.sku && slot.sku.startsWith("SM") && slot.sku.length <= 6)) {
+                tagInfo = `Anycubic RFID · ${slot.sku}`;
+              } else if (slot.sku && slot.sku !== "OPENSPOOL") {
+                tagInfo = `SKU: ${slot.sku}`;
+              } else if (slot.rfid) {
+                tagInfo = "RFID Tag Bound";
+              } else {
+                tagInfo = gm?.name ? gm.name : "Manual / No Tag";
+              }
+            }
+            if (!slot.rfid && !slot.uid && tagInfo.includes("Unidentified Tag")) {
+              tagInfo = tagInfo.replace("Unidentified Tag", "No Tag Detected");
+            }
+            if (cName) tagInfo = `${cName} · ${tagInfo}`;
+            if (skuEl) {
+              skuEl.innerText = tagInfo;
+              skuEl.title = tagInfo;
+            }
+
+            // Live temperatures - Spoolman assignment takes absolute precedence over NFC tag
+            let nozTemp = null;
+            let bedTemp = null;
+            if (isManualSpool && gm.temp && gm.temp > 0) {
+              nozTemp = `${gm.temp}°C`;
+            } else if (inv && inv.extruder_temp && inv.extruder_temp.min) {
+              nozTemp = `${inv.extruder_temp.min}–${inv.extruder_temp.max}°C`;
+            } else if (inv && inv.temp) {
+              nozTemp = `${inv.temp}°C`;
+            } else if (gm && gm.temp && gm.temp > 0) {
+              nozTemp = `${gm.temp}°C`;
+            } else if (slot.temp && slot.temp > 0) {
+              nozTemp = `${slot.temp}°C`;
+            }
+
+            if (!isManualSpool) {
+              if (inv && inv.hotbed_temp && inv.hotbed_temp.min) {
+                bedTemp = `${inv.hotbed_temp.min}–${inv.hotbed_temp.max}°C`;
+              } else if (inv && inv.bed_temp) {
+                bedTemp = `${inv.bed_temp}°C`;
+              }
+            }
+
+            const defNoz = mat.includes("PETG") ? "230–250°C" : (mat.includes("ABS") ? "240–260°C" : "200–220°C");
+            const defBed = mat.includes("PETG") ? "70–80°C" : (mat.includes("ABS") ? "90–100°C" : "50–60°C");
+            let finalNoz = nozTemp || defNoz;
+            let finalBed = bedTemp || defBed;
+            if (!nozTemp && (!mat || mat === "Unassigned" || mat === "No Spool Assigned" || mat === "Unknown")) {
+              finalNoz = "—";
+              finalBed = "—";
+            }
+
+            if (tempEl) {
+              tempEl.innerText = `${finalNoz} / ${finalBed}`;
+              tempEl.title = `Extruder: ${finalNoz} | Bed: ${finalBed}`;
+            }
+
+            if (colorHex) {
+              const hexStr = colorHex.startsWith('#') ? colorHex : `#${colorHex}`;
+              if (glowEl) {
+                glowEl.style.background = hexStr;
+                glowEl.style.boxShadow = `0 0 20px ${hexStr}40`;
+              }
+              if (circleEl) circleEl.style.borderColor = hexStr;
+              if (rSpool) rSpool.style.borderColor = hexStr;
+            }
+            if (rDesc) {
+              rDesc.innerText = `${mat || 'FILAMENT'} · ${isLoaded ? 'LOADED' : 'PARKED'}`;
+            }
+
+            if (isLoaded) {
+              card.classList.add("active-feed");
+              if (badgeEl) {
+                if (laneCalibrationState[idx]) {
+                  badgeEl.innerText = laneCalibrationState[idx].badgeText || "CALIBRATING";
+                  badgeEl.className = laneCalibrationState[idx].isDone ? "lane-status ready" : "lane-status calibrating";
+                } else {
+                  badgeEl.innerText = "LOADED";
+                  badgeEl.className = "lane-status ready";
+                }
+              }
+              if (actionsEl) {
+                actionsEl.innerHTML = `
+                  <button class="btn btn-warning" onclick="executeGcode('ACE_LANE_PARK T=${idx}')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v18"/><path d="m18 15-6 6-6-6"/></svg>
+                    Unload Lane
+                  </button>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:6px;">
+                    <button class="btn btn-danger" onclick="executeGcode('ACE_LANE_EJECT T=${idx}')">Eject Lane</button>
+                    <button class="btn btn-danger" onclick="executeGcode('ACE_LANE_EJECT T=${idx} FORCE=1')">Force Eject</button>
+                  </div>
+                `;
+              }
+            } else {
+              const isFeeding = Boolean(slot && (slot.status === "feeding" || slot.status_code === 1 || slot.status_detail === "feeding"));
+              const isPreload = Boolean(slot && (slot.status === "preload" || slot.status_code === 5 || slot.status_detail === "preload" || slot.status_detail === "identifying"));
+              const isUnwinding = Boolean(slot && (slot.status === "unwinding" || slot.status_code === 2 || slot.status_detail === "rollback"));
+
+              if (isFeeding || isPreload) {
+                card.classList.add("active-feed");
+                if (circleEl) {
+                  circleEl.classList.add("spinning-fwd");
+                  circleEl.classList.remove("spinning-rev");
+                }
+                if (rSpool) {
+                  rSpool.classList.add("spinning");
+                  rSpool.classList.remove("spinning-rev");
+                }
+                if (badgeEl) {
+                  if (laneCalibrationState[idx]) {
+                    badgeEl.innerText = laneCalibrationState[idx].badgeText || (isPreload ? "PRELOADING" : "FEEDING");
+                    badgeEl.className = laneCalibrationState[idx].isDone ? "lane-status ready" : "lane-status calibrating";
+                  } else {
+                    badgeEl.innerText = isPreload ? "PRELOADING" : "FEEDING";
+                    badgeEl.className = "lane-status loading";
+                  }
+                }
+                if (rDesc) rDesc.innerText = `${mat || 'FILAMENT'} · ${isPreload ? 'PRELOAD' : 'FEEDING'}`;
+                if (actionsEl) {
+                  actionsEl.innerHTML = `
+                    <button class="btn" style="opacity:0.8; pointer-events:none; background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">
+                      <svg class="spinning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
+                      ${isPreload ? 'Preloading...' : 'Feeding...'}
+                    </button>
+                    <button class="btn btn-danger" onclick="executeGcode('ACE_LANE_EJECT T=${idx}')">Stop / Eject</button>
+                  `;
+                }
+              } else if (isUnwinding) {
+                card.classList.add("active-feed");
+                if (circleEl) {
+                  circleEl.classList.add("spinning-rev");
+                  circleEl.classList.remove("spinning-fwd");
+                }
+                if (rSpool) {
+                  rSpool.classList.add("spinning-rev");
+                  rSpool.classList.remove("spinning");
+                }
+                if (badgeEl) {
+                  if (laneCalibrationState[idx]) {
+                    badgeEl.innerText = laneCalibrationState[idx].badgeText || "CALIBRATING";
+                    badgeEl.className = laneCalibrationState[idx].isDone ? "lane-status ready" : "lane-status calibrating";
+                  } else {
+                    badgeEl.innerText = "RETRACTING";
+                    badgeEl.className = "lane-status warning";
+                  }
+                }
+                if (rDesc) rDesc.innerText = `${mat || 'FILAMENT'} · RETRACTING`;
+                if (actionsEl) {
+                  actionsEl.innerHTML = `
+                    <button class="btn" style="opacity:0.8; pointer-events:none; background:rgba(244,63,94,0.15); color:#fb7185; border-color:rgba(244,63,94,0.3);">Retracting...</button>
+                    <button class="btn btn-danger" onclick="executeGcode('ACE_LANE_EJECT T=${idx}')">Eject</button>
+                  `;
+                }
+              } else {
+                card.classList.remove("active-feed");
+                if (circleEl) circleEl.classList.remove("spinning-fwd", "spinning-rev");
+                if (rSpool) rSpool.classList.remove("spinning", "spinning-rev");
+                if (badgeEl) {
+                  if (laneCalibrationState[idx]) {
+                    badgeEl.innerText = laneCalibrationState[idx].badgeText || (laneCalibrationState[idx].isDone ? "CALIBRATED" : "CALIBRATING");
+                    badgeEl.className = laneCalibrationState[idx].isDone ? "lane-status ready" : "lane-status calibrating";
+                  } else {
+                    badgeEl.innerText = "PARKED";
+                    badgeEl.className = "lane-status ready";
+                  }
+                }
+                if (rDesc) rDesc.innerText = `${mat || 'FILAMENT'} · PARKED`;
+                if (actionsEl) {
+                  actionsEl.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                      <button class="btn btn-primary" onclick="executeGcode('T${idx}')">Select Lane</button>
+                      <button class="btn btn-warning" onclick="executeGcode('ACE_DEBUG_SET_CURRENT_INDEX TOOL=${idx}')" title="Force ownership of the toolhead to this lane if state gets desynchronized">Claim Loaded</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px; margin-top:6px;">
+                      <button class="btn" onclick="parkLaneAtHub(${idx})" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc; font-size:10px; padding:6px 2px;" title="Feed T${idx} to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
+                      <button class="btn btn-danger" style="font-size:10px; padding:6px 2px;" onclick="executeGcode('ACE_LANE_EJECT T=${idx}')">Eject</button>
+                      <button class="btn btn-danger" style="font-size:10px; padding:6px 2px;" onclick="executeGcode('ACE_LANE_EJECT T=${idx} FORCE=1')">Force Eject</button>
+                    </div>
+                  `;
+                }
+              }
+            }
+
+            // Update live filament track
+            updateLanePathTrack(idx, true, isLoaded, colorHex);
+          });
+        }
+      }
+
+      if (status["filament_switch_sensor toolhead_entry"]?.filament_detected !== undefined) {
+        const det = status["filament_switch_sensor toolhead_entry"].filament_detected;
+        const elVal = document.getElementById("sensorEntry");
+        const pill = document.getElementById("pillEntry");
+        if (elVal) elVal.innerText = det ? "DETECTED" : "OPEN";
+        if (pill) {
+          pill.classList.toggle("active", !!det);
+        }
+        refreshLaneTracks();
+      }
+      if (status["filament_switch_sensor toolhead_postgear"]?.filament_detected !== undefined) {
+        const det = status["filament_switch_sensor toolhead_postgear"].filament_detected;
+        const elVal = document.getElementById("sensorPostgear");
+        const pill = document.getElementById("pillPostgear");
+        if (elVal) elVal.innerText = det ? "GRIPPED" : "EMPTY";
+        if (pill) {
+          pill.classList.toggle("active", !!det);
+        }
+        refreshLaneTracks();
+      }
+      if (status["filament_switch_sensor hub_detect"]?.filament_detected !== undefined) {
+        const det = status["filament_switch_sensor hub_detect"].filament_detected;
+        const elVal = document.getElementById("sensorHub");
+        const pill = document.getElementById("pillHub");
+        if (elVal) elVal.innerText = det ? "DETECTED" : "CLEAR";
+        if (pill) {
+          pill.classList.toggle("active", !!det);
+        }
+        refreshLaneTracks();
+      }
+    }
+
+    function executeGcode(gcode) {
+      log(`Executing: ${gcode}`, "info");
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          jsonrpc: "2.0",
+          method: "printer.gcode.script",
+          params: { script: gcode },
+          id: ++reqId
+        }));
+        return;
+      }
+      fetch(`${API_BASE}/printer/gcode/script?script=${encodeURIComponent(gcode)}`, {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          log(`Error: ${data.error.message}`, "error");
+          for (let t = 0; t < 4; t++) {
+            if (laneCalibrationState[t] && !laneCalibrationState[t].isDone) {
+              laneCalibrationState[t] = null;
+            }
+          }
+          refreshLaneTracks();
+        } else {
+          log(`Success: ${gcode}`, "success");
+        }
+      })
+      .catch(err => {
+        log(`Fetch failed: ${err}`, "error");
+        for (let t = 0; t < 4; t++) {
+          if (laneCalibrationState[t] && !laneCalibrationState[t].isDone) {
+            laneCalibrationState[t] = null;
+          }
+        }
+        refreshLaneTracks();
+      });
+    }
+
+    let currentAssignSlot = -1;
+    let cachedSpoolsList = [];
+
+    async function fetchBackendSpools() {
+      // Try Moonraker Spoolman proxy or filaman endpoints
+      const endpoints = [
+        "/server/spoolman/spool",
+        "/server/filaman/spools"
+      ];
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            const data = await res.json();
+            // Handle both raw array or wrapped in result / spools
+            let list = Array.isArray(data) ? data : (data.result?.spools || data.spools || data.result || []);
+            if (Array.isArray(list) && list.length > 0) return list;
+          }
+        } catch (e) {
+          console.warn(`Spool fetch failed for ${url}:`, e);
+        }
+      }
+      return [];
+    }
+
+    async function openSpoolAssignModal(idx) {
+      currentAssignSlot = idx;
+      const modal = document.getElementById("spoolAssignModal");
+      if (!modal) return;
+      modal.style.display = "flex";
+      document.getElementById("spoolModalTitle").innerText = `Assign Spool · Lane T${idx}`;
+
+      // Check current assignment
+      const mmuCache = lastStatusCache?.mmu;
+      const gm = {
+        name: mmuCache?.gate_filament_name?.[idx] || "",
+        spool_id: mmuCache?.gate_spool_id?.[idx] !== undefined ? mmuCache.gate_spool_id[idx] : -1
+      };
+      const curText = document.getElementById("currentSpoolText");
+      if (gm && gm.spool_id && gm.spool_id > 0) {
+        curText.innerHTML = `Currently Assigned: <span style="color:#a5b4fc;">#${gm.spool_id} · ${gm.name || 'Spool ' + gm.spool_id}</span>`;
+      } else {
+        curText.innerText = "Currently Assigned: None (Unassigned / Manual)";
+      }
+
+      const listEl = document.getElementById("spoolList");
+      listEl.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Fetching spools from Spoolman / FilaMan...</div>';
+
+      cachedSpoolsList = await fetchBackendSpools();
+      renderSpoolsList(cachedSpoolsList);
+    }
+
+    function closeSpoolAssignModal() {
+      const modal = document.getElementById("spoolAssignModal");
+      if (modal) modal.style.display = "none";
+      currentAssignSlot = -1;
+    }
+
+    function renderSpoolsList(spools) {
+      const listEl = document.getElementById("spoolList");
+      if (!listEl) return;
+      if (!spools || spools.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">No spools found in backend database.</div>';
+        return;
+      }
+
+      const mmuCache = lastStatusCache?.mmu;
+      const currentSpoolId = mmuCache?.gate_spool_id?.[currentAssignSlot];
+
+      listEl.innerHTML = spools.map(s => {
+        const id = s.id;
+        const brand = s.filament?.manufacturer?.name || s.filament?.vendor?.name || s.vendor || s.brand || "";
+        const material = s.filament?.material_type || s.filament?.material || s.material || "PLA";
+        const colorName = s.filament?.designation || s.filament?.manufacturer_color_name || s.filament?.name || s.name || "";
+        const colorHexRaw = s.filament?.colors?.[0]?.color?.hex_code || s.filament?.colors?.[0]?.hex_code || s.filament?.color_hex || s.color_hex || s.color || "#71717a";
+        const cleanHex = colorHexRaw.startsWith('#') ? colorHexRaw : `#${colorHexRaw}`;
+        const remaining = s.remaining_weight_g !== undefined ? `${Math.round(s.remaining_weight_g)}g` : (s.remaining_weight !== undefined ? `${Math.round(s.remaining_weight)}g` : "");
+        const temps = s.filament?.custom_fields?.temp_nozzle_min ? `${s.filament.custom_fields.temp_nozzle_min}–${s.filament.custom_fields.temp_nozzle_max || 220}°C` : "";
+        const rfid = s.rfid_uid || s.custom_fields?.card_uids || "";
+        const isCurrent = (id === currentSpoolId);
+
+        return `
+          <div style="background:rgba(255,255,255,0.03); border:1px solid ${isCurrent ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.08)'}; border-radius:8px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+              <span style="width:20px; height:20px; border-radius:50%; background:${cleanHex}; border:2px solid rgba(255,255,255,0.25); box-shadow:0 0 8px ${cleanHex}60; flex-shrink:0;"></span>
+              <div style="min-width:0;">
+                <div style="font-weight:600; font-size:13px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  #${id} · ${brand ? brand + ' ' : ''}${material} · ${colorName}
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  Color: ${cleanHex} · Remaining: ${remaining || 'Unknown'} ${temps ? '· ' + temps : ''} ${rfid ? '· 🏷️ ' + rfid : ''}
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-micro" onclick="assignSpool(${id})" style="background:${isCurrent ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.15)'}; border-color:rgba(99,102,241,0.4); color:#a5b4fc; white-space:nowrap; padding:4px 10px; font-size:11px;">
+              ${isCurrent ? 'Active' : 'Assign'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterSpools() {
+      const rawQ = (document.getElementById("spoolSearchInput")?.value || "").trim().toLowerCase();
+      if (!rawQ) {
+        renderSpoolsList(cachedSpoolsList);
+        return;
+      }
+      const tokens = rawQ.split(/\s+/).filter(Boolean);
+      const filtered = cachedSpoolsList.filter(s => {
+        const haystack = `${s.id} ${JSON.stringify(s)}`.toLowerCase();
+        return tokens.every(tok => haystack.includes(tok));
+      });
+      renderSpoolsList(filtered);
+    }
+
+    function assignSpool(spoolId) {
+      if (currentAssignSlot < 0) return;
+
+      let mmuCache = lastStatusCache?.mmu || {};
+      let mat = "";
+      let hex = "";
+      let cleanName = "";
+
+      const s = cachedSpoolsList.find(x => String(x.id) === String(spoolId));
+      if (s) {
+        mat = (s.filament?.material_type || s.filament?.material || s.material || 'PLA').replace(/["']/g, '');
+        const hexRaw = s.filament?.colors?.[0]?.color?.hex_code || s.filament?.colors?.[0]?.hex_code || s.filament?.color_hex || s.color_hex || s.color || 'FFFFFF';
+        hex = hexRaw.replace('#', '').toUpperCase();
+        
+        let nameRaw = s.filament?.name || s.filament?.manufacturer_color_name || s.name || '';
+        if (!nameRaw) {
+          const brand = s.filament?.manufacturer?.name || s.filament?.vendor?.name || s.vendor || s.brand || '';
+          const colorName = s.filament?.designation || s.filament?.manufacturer_color_name || '';
+          nameRaw = [brand, colorName, mat].filter(Boolean).join(' ');
+        }
+        cleanName = nameRaw.replace(/["';]/g, '').trim();
+        
+        let tempCmd = '';
+        const minTemp = s.filament?.custom_fields?.temp_nozzle_min || s.filament?.settings_extruder_temp;
+        const maxTemp = s.filament?.custom_fields?.temp_nozzle_max;
+        const defaultTemp = s.filament?.settings_extruder_temp;
+        let temp = defaultTemp;
+        if (!temp && minTemp && maxTemp) {
+            temp = Math.round((parseInt(minTemp) + parseInt(maxTemp)) / 2);
+        } else if (!temp && minTemp) {
+            temp = minTemp;
+        }
+        if (temp) {
+            tempCmd = ` TEMP=${temp}`;
+        }
+        
+        log(`Assigning Spool #${spoolId} to Lane T${currentAssignSlot}...`, "info");
+        executeGcode(`MMU_GATE_MAP GATE=${currentAssignSlot} SPOOLID=${spoolId} MATERIAL="${mat}" COLOR="${hex}" NAME="${cleanName}"${tempCmd}`);
+      } else {
+        log(`Assigning Spool #${spoolId} to Lane T${currentAssignSlot}...`, "info");
+        executeGcode(`MMU_GATE_MAP GATE=${currentAssignSlot} SPOOLID=${spoolId}`);
+      }
+
+      if (!mmuCache.gate_filament_name) mmuCache.gate_filament_name = [];
+      if (!mmuCache.gate_material) mmuCache.gate_material = [];
+      if (!mmuCache.gate_color) mmuCache.gate_color = [];
+      if (!mmuCache.gate_spool_id) mmuCache.gate_spool_id = [];
+      
+      mmuCache.gate_filament_name[currentAssignSlot] = cleanName;
+      mmuCache.gate_material[currentAssignSlot] = mat;
+      mmuCache.gate_color[currentAssignSlot] = hex;
+      mmuCache.gate_spool_id[currentAssignSlot] = parseInt(spoolId);
+      
+      if (lastStatusCache) {
+          lastStatusCache.mmu = mmuCache;
+          handleStatusUpdate(lastStatusCache);
+      }
+      refreshLaneTracks();
+
+      setTimeout(() => {
+        fetch(`${API_BASE}/printer/objects/query?mmu`).then(r=>r.json()).then(d=>{
+          if(d.result?.status?.mmu) {
+            mmuCache = Object.assign(mmuCache, d.result.status.mmu);
+            if (lastStatusCache) {
+                lastStatusCache.mmu = mmuCache;
+                handleStatusUpdate(lastStatusCache);
+            }
+            refreshLaneTracks();
+          }
+        }).catch(e=>console.log(e));
+      }, 500);
+
+      closeSpoolAssignModal();
+    }
+
+    function unassignSpool() {
+      if (currentAssignSlot < 0) return;
+      log(`Clearing spool assignment from Lane T${currentAssignSlot}...`, "info");
+      executeGcode(`MMU_GATE_MAP GATE=${currentAssignSlot} SPOOLID=-1 MATERIAL="" COLOR="" NAME=""`);
+      
+      let mmuCache = lastStatusCache?.mmu || {};
+      if (!mmuCache.gate_filament_name) mmuCache.gate_filament_name = [];
+      if (!mmuCache.gate_material) mmuCache.gate_material = [];
+      if (!mmuCache.gate_color) mmuCache.gate_color = [];
+      if (!mmuCache.gate_spool_id) mmuCache.gate_spool_id = [];
+
+      mmuCache.gate_filament_name[currentAssignSlot] = "";
+      mmuCache.gate_material[currentAssignSlot] = "";
+      mmuCache.gate_color[currentAssignSlot] = "";
+      mmuCache.gate_spool_id[currentAssignSlot] = -1;
+
+      if (lastStatusCache) {
+          lastStatusCache.mmu = mmuCache;
+          handleStatusUpdate(lastStatusCache);
+      }
+      refreshLaneTracks();
+
+      setTimeout(() => {
+        fetch(`${API_BASE}/printer/objects/query?mmu`).then(r=>r.json()).then(d=>{
+          if(d.result?.status?.mmu) {
+            mmuCache = Object.assign(mmuCache, d.result.status.mmu);
+            if (lastStatusCache) {
+                lastStatusCache.mmu = mmuCache;
+                handleStatusUpdate(lastStatusCache);
+            }
+            refreshLaneTracks();
+          }
+        }).catch(e=>console.log(e));
+      }, 500);
+
+      closeSpoolAssignModal();
+    }
+
+    
+    // Endless Spool State Tracking
+    let endlessState = {
+      enabled: false,
+      mode: 'material',
+      backups: {}
+    };
+
+    function toggleEndlessSpool(val) {
+      if (val) {
+        executeGcode('ACE_ENABLE_ENDLESS_SPOOL');
+      } else {
+        executeGcode('ACE_DISABLE_ENDLESS_SPOOL');
+      }
+    }
+
+    function setEndlessMode(val) {
+      if (val === 'prompt') {
+        executeGcode('ACE_RUNOUT_MODE MODE=prompt');
+      } else {
+        executeGcode('ACE_SET_ENDLESS_SPOOL_MODE MODE=' + val);
+      }
+    }
+
+    let backupLockTimeout = null;
+
+    function setBackupLane(slot, backup) {
+      executeGcode('ACE_SET_SLOT_BACKUP SLOT=' + slot + ' BACKUP=' + backup);
+      endlessState.backups[slot] = parseInt(backup, 10);
+      renderBackupMatrix();
+      
+      if (backupLockTimeout) clearTimeout(backupLockTimeout);
+      backupLockTimeout = setTimeout(() => {
+        backupLockTimeout = null;
+      }, 3000);
+    }
+
+    function renderBackupMatrix() {
+      const container = document.getElementById('backupMatrixContainer');
+      if (!container) return;
+      let html = '';
+      for (let i = 0; i < 4; i++) {
+        let currentBackup = endlessState.backups[i] !== undefined ? endlessState.backups[i] : -1;
+        html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); padding:6px 10px; border-radius:4px;">
+          <span style="font-size:12px; font-family:var(--font-mono); color:var(--text-main);">T${i} Backup</span>
+          <select onchange="setBackupLane(${i}, this.value)" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-main); border-radius:4px; font-size:11px; outline:none; padding:2px 4px;">
+            <option value="-1" ${currentBackup == -1 ? 'selected' : ''}>None</option>
+            <option value="0" ${currentBackup == 0 ? 'selected' : ''} ${i===0 ? 'disabled' : ''}>T0</option>
+            <option value="1" ${currentBackup == 1 ? 'selected' : ''} ${i===1 ? 'disabled' : ''}>T1</option>
+            <option value="2" ${currentBackup == 2 ? 'selected' : ''} ${i===2 ? 'disabled' : ''}>T2</option>
+            <option value="3" ${currentBackup == 3 ? 'selected' : ''} ${i===3 ? 'disabled' : ''}>T3</option>
+          </select>
+        </div>`;
+      }
+      container.innerHTML = html;
+      
+      // Update visual badges on slots
+      for (let i = 0; i < 4; i++) {
+        const badge = document.getElementById('backupBadge' + i);
+        if (badge) {
+          if (endlessState.backups[i] !== undefined && endlessState.backups[i] !== -1) {
+            badge.style.display = 'inline-block';
+            badge.innerText = `🔗 -> T${endlessState.backups[i]}`;
+          } else {
+            // Check if this slot is a backup FOR someone else
+            let isBackupFor = -1;
+            for (let j = 0; j < 4; j++) {
+              if (endlessState.backups[j] == i) {
+                isBackupFor = j;
+                break;
+              }
+            }
+            if (isBackupFor !== -1) {
+              badge.style.display = 'inline-block';
+              badge.innerText = `🛡️ for T${isBackupFor}`;
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+        }
+      }
+    }
+
+    // Hook into update logic
+    const oldHandleStatusUpdate = handleStatusUpdate;
+    handleStatusUpdate = function(status) {
+      oldHandleStatusUpdate(status);
+      
+      let changed = false;
+      
+      const sv = status.save_variables?.variables || {};
+      const enabled = status.ace?.endless_spool_enabled ?? sv.ace_endless_spool_enabled;
+      const mode = status.ace?.endless_spool_match_mode ?? sv.ace_endless_spool_match_mode ?? sv.ace_endless_spool_mode;
+      
+      if (enabled !== undefined && endlessState.enabled !== enabled) {
+        endlessState.enabled = enabled;
+        changed = true;
+      }
+      if (mode !== undefined && endlessState.mode !== mode) {
+        endlessState.mode = mode;
+        changed = true;
+      }
+      if (sv.ace_runout_mode !== undefined && sv.ace_runout_mode === 'prompt' && endlessState.mode !== 'prompt') {
+        endlessState.mode = 'prompt';
+        changed = true;
+      }
+      if (sv.ace_backup_lanes !== undefined && !backupLockTimeout) {
+        let backups = {};
+        if (typeof sv.ace_backup_lanes === 'object' && sv.ace_backup_lanes !== null) {
+          if (Array.isArray(sv.ace_backup_lanes)) {
+            sv.ace_backup_lanes.forEach((val, idx) => backups[idx] = val);
+          } else {
+            backups = sv.ace_backup_lanes;
+          }
+        }
+        
+        let backupStr = JSON.stringify(backups);
+        if (JSON.stringify(endlessState.backups) !== backupStr) {
+          endlessState.backups = backups;
+          changed = true;
+        }
+      }
+
+      if (changed || document.getElementById('backupMatrixContainer').innerHTML.trim() === '') {
+        const toggle = document.getElementById('endlessMasterToggle');
+        const label = document.getElementById('endlessMasterLabel');
+        const modeSel = document.getElementById('endlessModeSelect');
+        
+        if (toggle) toggle.checked = Boolean(endlessState.enabled);
+        if (label) {
+          label.innerText = endlessState.enabled ? 'ENABLED' : 'DISABLED';
+          label.style.color = endlessState.enabled ? '#818cf8' : 'var(--text-muted)';
+        }
+        if (modeSel) modeSel.value = endlessState.mode;
+        
+        renderBackupMatrix();
+      }
+    };
+
+    window.onload = () => { loadRoastLanes(); connectMoonraker(); renderBackupMatrix(); };
+  </script>
+
+  <!-- Spool Assign Modal -->
+  <div id="spoolAssignModal" class="modal-overlay" onclick="if(event.target === this) closeSpoolAssignModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:9999; justify-content:center; align-items:center;">
+    <div class="modal-card" style="background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); width:90%; max-width:600px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+      <div class="modal-header" style="padding:16px 20px; border-bottom:1px solid var(--bg-card-border); display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="spoolModalTitle" style="font-family:var(--font-display); font-size:18px; margin:0;">Assign Spool</h2>
+        <button class="btn btn-micro" onclick="closeSpoolAssignModal()" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:18px; padding:0;">✕</button>
+      </div>
+      <div class="modal-body" style="padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; flex-grow:1;">
+        <div id="currentSpoolInfo" class="current-spool" style="background:rgba(255,255,255,0.05); padding:12px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span id="currentSpoolText" style="font-size:13px; font-weight:600;">Currently Assigned: None</span>
+          <button class="btn btn-danger" onclick="unassignSpool()">Unassign / Clear</button>
+        </div>
+        <input type="text" id="spoolSearchInput" placeholder="Search spools by name, brand, material, color, ID..." oninput="filterSpools()" style="width:100%; padding:10px 14px; background:rgba(0,0,0,0.3); border:1px solid var(--bg-card-border); border-radius:var(--radius-md); color:#fff; font-family:var(--font-body); font-size:13px; outline:none; box-sizing:border-box;">
+        <div id="spoolList" class="spool-list" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Loading spools...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
