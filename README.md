@@ -5,21 +5,29 @@
 
 The **ACE Control Deck** is the official standalone command center and real-time visualizer for the Anycubic ACE 2 Pro (and similar multi-material systems) running on Klipper and Moonraker. It provides a production-grade interface for filament telemetry, hardware control, thermal management, and motion analytics.
 
+## Architecture & Ecosystem
+
+ACE Control Deck is the **Frontend Visualizer** and command dispatcher. It strictly relies on the **`multiACE`** backend driver to communicate with the ACE hardware.
+
+`ACE 2 Pro Hardware (Custom Firmware) <--> multiACE Backend (decay71/multiACE) <--> Klipper & Moonraker <--> ACE Control Deck (Frontend)`
+
 ## Key Features
 
 - **Interactive 4-Slot Multi-Material Visualization**: Live color swatches, brand labels, spool IDs, and material badges mapped directly to your Spoolman / OpenRFID data.
 - **Real-Time Filament Path & Sensor Telemetry**: Instant visualization of filament traversal through the system (Hub switch, Entry switch, Postgear switch, Meltzone state).
 - **Active Heating & Dryer Thermal Control**: Manage active drying with target temperatures, interactive temperature graphing, humidity (RH%) monitoring, and countdown timers.
 - **Rotisserie & Dry Roll Motion Tracking**: Agitation mode for even heating, rotation angle tracking, and park datum state synchronization.
-- **One-Touch Motion & Service Controls**: Streamlined macros for Load, Unload, Park, Purge, Komb Brush Wipe, and Toolchange.
+- **Configurable Auxiliary Actions**: Fully customizable macro buttons for Purging, Wiping, Loading, and Unloading to fit your specific printer's kinematics.
 - **Mainsail & Fluidd Embeddable or Standalone**: Drop it directly into your Mainsail sidebar, host it via Moonraker static files, or run it as a responsive tablet/mobile web dashboard.
-- **Spoolman & OpenRFID Integration**: Deep synergy with filament management tools.
 
 ## Requirements & Hardware Prerequisites
 
-- Klipper + Moonraker
-- Anycubic ACE 2 Pro (Standalone, multiACE setup, or custom Voron/CoreXY integration)
-- A modern browser with WebSocket support
+To use the ACE Control Deck, your ecosystem must meet the following strict requirements:
+
+1. **Physical Unit**: Anycubic ACE 2 Pro.
+2. **Firmware Requirement**: Stock Anycubic firmware does NOT expose Moonraker/Klipper WebSocket APIs! The ACE 2 Pro **MUST** be flashed with open-source custom firmware compatible with the backend driver.
+3. **Backend Driver**: Klipper + Moonraker running the **[`decay71/multiACE`](https://github.com/decay71/multiACE)** module (or a compatible fork). ACE Control Deck subscribes directly to `multiACE` printer objects for state.
+4. **Sensors**: The deck visualizes `filament_switch_sensor hub_detect`, `toolhead_entry`, and `toolhead_postgear`. It degrades gracefully if you lack certain switches, but `hub_detect` is critical for multi-material parking.
 
 ## Installation Methods
 
@@ -60,11 +68,14 @@ We provide an installation script to patch Mainsail's routing table to include A
 ## Configuration & Connection Guide
 
 - **Connection Setup**: If using the app standalone, use the UI settings modal (gear icon) to set your printer's address. Alternatively, you can pass the host via the URL: `index.html?host=192.168.1.100:7125`.
-- **Macro Requirements**: The deck issues standard G-code macro calls. Ensure the following macros (or aliases) are defined in your Klipper configuration:
-  - `ACE_LOAD` / `ACE_UNLOAD`
-  - `FILAMENT_PARK`
-  - `GOOSE_PURGE`
-  - `KOMB`
+- **Macro Customization**: ACE Control Deck no longer enforces rig-specific macros (e.g. `GOOSE_PURGE` or `KOMB`). You can configure the exact commands dispatched by the UI using the **Settings Gear** in the top right:
+  - **Load Command Template**: e.g. `ACE_LOAD SLOT={slot}` or `T{slot}`
+  - **Unload Command Template**: e.g. `ACE_UNLOAD SLOT={slot}` or `ACE_EJECT T={slot}`
+  - **Purge Macro Name**: e.g. `PURGE` or `CLEAN_NOZZLE`. Buttons will only appear if the macro exists in Klipper.
+
+### Sample Configuration
+
+A sample macro wrapper configuration is provided in `config/ace_deck_macros_sample.cfg` to bridge the deck's default templates into `multiACE` commands.
 
 ## Hardware Invariants & Operational Caveats
 
