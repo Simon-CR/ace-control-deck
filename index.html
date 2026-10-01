@@ -1468,6 +1468,27 @@
       <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Moonraker Host (IP:Port)</label>
       <input type="text" id="hostInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="e.g. 192.168.1.50:7125" />
       
+      
+      <h4 style="margin-bottom:12px; margin-top:20px; font-size:14px; color:var(--text-main);">Sensor Topology & Mapping</h4>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">Configure your sensor setup or use Auto-Detect.</p>
+      
+      <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Sensor Topology</label>
+      <select id="topologySelect" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;">
+        <option value="auto">Auto-Detect</option>
+        <option value="tier1">Tier 1 (Minimal / 1 Sensor)</option>
+        <option value="tier2">Tier 2 (Standard / 2 Sensors)</option>
+        <option value="tier3">Tier 3 (Advanced / 3 Sensors + Encoder)</option>
+      </select>
+
+      <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Hub Sensor Name</label>
+      <input type="text" id="hubSensorInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="filament_switch_sensor hub_detect" />
+
+      <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Toolhead Entry Sensor Name</label>
+      <input type="text" id="entrySensorInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="filament_switch_sensor toolhead_entry" />
+
+      <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Post-Gear Sensor Name</label>
+      <input type="text" id="postgearSensorInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="filament_switch_sensor toolhead_postgear" />
+
       <h4 style="margin-bottom:12px; margin-top:20px; font-size:14px; color:var(--text-main);">Action Templates</h4>
       <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">Use <code>{slot}</code> to inject the lane number (0-3).</p>
       
@@ -2080,6 +2101,11 @@
     let WS_URL = `${IS_HTTPS ? "wss:" : "ws:"}//${MOONRAKER_HOST}/websocket`;
     let API_BASE = `${IS_HTTPS ? "https:" : "http:"}//${MOONRAKER_HOST}`;
 
+    let SENSOR_TOPOLOGY = localStorage.getItem('sensor_topology') || "auto";
+    let SENSOR_HUB = localStorage.getItem('sensor_hub') || "filament_switch_sensor hub_detect";
+    let SENSOR_ENTRY = localStorage.getItem('sensor_entry') || "filament_switch_sensor toolhead_entry";
+    let SENSOR_POSTGEAR = localStorage.getItem('sensor_postgear') || "filament_switch_sensor toolhead_postgear";
+
     let MACRO_LOAD = localStorage.getItem('macro_load') || "ACE_LOAD SLOT={slot}";
     let MACRO_UNLOAD = localStorage.getItem('macro_unload') || "ACE_UNLOAD SLOT={slot}";
     let MACRO_PURGE = localStorage.getItem('macro_purge') || "PURGE";
@@ -2087,6 +2113,10 @@
 
     function updateSettingsUI() {
       document.getElementById('hostInput').value = MOONRAKER_HOST;
+      document.getElementById('topologySelect').value = SENSOR_TOPOLOGY;
+      document.getElementById('hubSensorInput').value = SENSOR_HUB;
+      document.getElementById('entrySensorInput').value = SENSOR_ENTRY;
+      document.getElementById('postgearSensorInput').value = SENSOR_POSTGEAR;
       document.getElementById('loadTemplateInput').value = MACRO_LOAD;
       document.getElementById('unloadTemplateInput').value = MACRO_UNLOAD;
       document.getElementById('purgeMacroInput').value = MACRO_PURGE;
@@ -2097,6 +2127,10 @@
 
     function saveSettings() {
       const inp = document.getElementById('hostInput').value.trim();
+      const topoInp = document.getElementById('topologySelect').value;
+      const hubInp = document.getElementById('hubSensorInput').value.trim();
+      const entryInp = document.getElementById('entrySensorInput').value.trim();
+      const postgearInp = document.getElementById('postgearSensorInput').value.trim();
       const loadInp = document.getElementById('loadTemplateInput').value.trim();
       const unloadInp = document.getElementById('unloadTemplateInput').value.trim();
       const purgeInp = document.getElementById('purgeMacroInput').value.trim();
@@ -2109,6 +2143,15 @@
         API_BASE = `${IS_HTTPS ? "https:" : "http:"}//${MOONRAKER_HOST}`;
       }
       
+      SENSOR_TOPOLOGY = topoInp || "auto";
+      SENSOR_HUB = hubInp || "filament_switch_sensor hub_detect";
+      SENSOR_ENTRY = entryInp || "filament_switch_sensor toolhead_entry";
+      SENSOR_POSTGEAR = postgearInp || "filament_switch_sensor toolhead_postgear";
+      localStorage.setItem('sensor_topology', SENSOR_TOPOLOGY);
+      localStorage.setItem('sensor_hub', SENSOR_HUB);
+      localStorage.setItem('sensor_entry', SENSOR_ENTRY);
+      localStorage.setItem('sensor_postgear', SENSOR_POSTGEAR);
+
       MACRO_LOAD = loadInp || "ACE_LOAD SLOT={slot}";
       MACRO_UNLOAD = unloadInp || "ACE_UNLOAD SLOT={slot}";
       MACRO_PURGE = purgeInp || "PURGE";
@@ -2467,7 +2510,7 @@
     }
 
     function parkReadyLanes() {
-      const hubOccupied = Boolean(lastStatusCache?.["filament_switch_sensor hub_detect"]?.filament_detected);
+      const hubOccupied = Boolean(lastStatusCache?.[SENSOR_HUB]?.filament_detected);
       if (hubOccupied) {
         log("Cannot park lanes: Hub switch is occupied. Clear toolhead/hub path first.", "error");
         return;
@@ -2478,7 +2521,7 @@
     const calibrateLanes = parkReadyLanes;
 
     function parkLaneAtHub(idx) {
-      const hubOccupied = Boolean(lastStatusCache?.["filament_switch_sensor hub_detect"]?.filament_detected);
+      const hubOccupied = Boolean(lastStatusCache?.[SENSOR_HUB]?.filament_detected);
       if (hubOccupied) {
         log(`Cannot park T${idx}: Hub switch is occupied. Clear toolhead/hub path first.`, "error");
         return;
@@ -2586,30 +2629,37 @@
         log("WebSocket connected cleanly to Moonraker", "success");
 
         // Subscribe to ACE & Printer objects
+        let objectsToSubscribe = {
+          ace: null,
+          ace_instance_0: null,
+          ace_state: null,
+          mmu: null,
+          filament_switch_sensor: null,
+          save_variables: null,
+          "gcode_macro ACE_AUTODRY": null,
+          [`gcode_macro ${MACRO_PURGE}`]: null,
+          [`gcode_macro ${MACRO_WIPE}`]: null
+        };
+        if (SENSOR_HUB && SENSOR_HUB.toLowerCase() !== "none") objectsToSubscribe[SENSOR_HUB] = null;
+        if (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== "none") objectsToSubscribe[SENSOR_ENTRY] = null;
+        if (SENSOR_POSTGEAR && SENSOR_POSTGEAR.toLowerCase() !== "none") objectsToSubscribe[SENSOR_POSTGEAR] = null;
+
         ws.send(JSON.stringify({
           jsonrpc: "2.0",
           method: "printer.objects.subscribe",
           params: {
-            objects: {
-              ace: null,
-              ace_instance_0: null,
-              ace_state: null,
-              mmu: null,
-              filament_switch_sensor: null,
-              "filament_switch_sensor toolhead_entry": null,
-              "filament_switch_sensor toolhead_postgear": null,
-              "filament_switch_sensor hub_detect": null,
-              save_variables: null,
-              "gcode_macro ACE_AUTODRY": null,
-              [`gcode_macro ${MACRO_PURGE}`]: null,
-              [`gcode_macro ${MACRO_WIPE}`]: null
-            }
+            objects: objectsToSubscribe
           },
           id: ++reqId
         }));
 
         // Immediate query
-        fetch(`${API_BASE}/printer/objects/query?ace&ace_instance_0&mmu&filament_switch_sensor%20toolhead_entry&filament_switch_sensor%20toolhead_postgear&filament_switch_sensor%20hub_detect&save_variables`)
+                let queryItems = ["ace", "ace_instance_0", "mmu", "save_variables"];
+        if (SENSOR_HUB && SENSOR_HUB.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_HUB));
+        if (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_ENTRY));
+        if (SENSOR_POSTGEAR && SENSOR_POSTGEAR.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_POSTGEAR));
+        let queryStr = queryItems.join("&");
+        fetch(`${API_BASE}/printer/objects/query?${queryStr}`)
           .then(res => res.json())
           .then(data => {
             if (data.result && data.result.status) {
@@ -2960,12 +3010,38 @@
         strand.style.boxShadow = `0 0 10px ${colorHex}88`;
       }
 
+      
+      let hasHub = (SENSOR_HUB && SENSOR_HUB.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_HUB] !== undefined);
+      let hasEntry = (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_ENTRY] !== undefined);
+      let hasPostgear = (SENSOR_POSTGEAR && SENSOR_POSTGEAR.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_POSTGEAR] !== undefined);
+
+      let isHubEnabled = SENSOR_TOPOLOGY === 'auto' ? hasHub : (SENSOR_TOPOLOGY !== 'none'); 
+      let isEntryEnabled = SENSOR_TOPOLOGY === 'auto' ? hasEntry : (SENSOR_TOPOLOGY === 'tier3');
+      let isPostgearEnabled = SENSOR_TOPOLOGY === 'auto' ? hasPostgear : (SENSOR_TOPOLOGY === 'tier2' || SENSOR_TOPOLOGY === 'tier3');
+
+      // Update Top Header Pills based on topology
+      const pillHubEl = document.getElementById("pillHub");
+      const pillEntryEl = document.getElementById("pillEntry");
+      const pillPostgearEl = document.getElementById("pillPostgear");
+      if (pillHubEl) pillHubEl.style.display = isHubEnabled ? "flex" : "none";
+      if (pillEntryEl) pillEntryEl.style.display = isEntryEnabled ? "flex" : "none";
+      if (pillPostgearEl) pillPostgearEl.style.display = isPostgearEnabled ? "flex" : "none";
+
       function setNodes(gate, park, hub, entry, post) {
         if (nodeGate) nodeGate.className = gate ? "path-node gate active" : "path-node gate";
         if (nodePark) nodePark.className = park ? "path-node park active" : "path-node park";
-        if (nodeHub) nodeHub.className = hub ? "path-node hub active" : "path-node hub";
-        if (nodeEntry) nodeEntry.className = entry ? "path-node entry active" : "path-node entry";
-        if (nodePost) nodePost.className = post ? "path-node postgear active" : "path-node postgear";
+        if (nodeHub) {
+          nodeHub.className = hub ? "path-node hub active" : "path-node hub";
+          nodeHub.style.opacity = isHubEnabled ? "1" : "0.2";
+        }
+        if (nodeEntry) {
+          nodeEntry.className = entry ? "path-node entry active" : "path-node entry";
+          nodeEntry.style.opacity = isEntryEnabled ? "1" : "0.2";
+        }
+        if (nodePost) {
+          nodePost.className = post ? "path-node postgear active" : "path-node postgear";
+          nodePost.style.opacity = isPostgearEnabled ? "1" : "0.2";
+        }
       }
 
       // If active calibration macro is managing this lane, honor its visual state
@@ -2974,8 +3050,8 @@
       }
 
       if (isLoaded) {
-        const postgearOn = Boolean(lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected);
-        const entryOn = Boolean(lastStatusCache["filament_switch_sensor toolhead_entry"]?.filament_detected);
+        const postgearOn = isPostgearEnabled ? Boolean(lastStatusCache[SENSOR_POSTGEAR]?.filament_detected) : false;
+        const entryOn = isEntryEnabled ? Boolean(lastStatusCache[SENSOR_ENTRY]?.filament_detected) : false;
         strand.classList.remove("active-sweep");
         strand.style.transition = "width 0.4s ease";
 
@@ -3062,7 +3138,7 @@
       const sv = lastStatusCache?.save_variables?.variables || {};
 
       let activeTool = -1;
-      const postgearOn = (lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+      const postgearOn = (lastStatusCache[SENSOR_POSTGEAR]?.filament_detected) ??
                          (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
       if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
         activeTool = mmuCache.tool;
@@ -3482,7 +3558,7 @@
     function refreshLaneTracks() {
       if (!aceCache.slots) return;
       let activeTool = -1;
-      const postgearOn = (lastStatusCache["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+      const postgearOn = (lastStatusCache[SENSOR_POSTGEAR]?.filament_detected) ??
                          (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
       if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
         activeTool = mmuCache.tool;
@@ -3651,7 +3727,7 @@
         updateRoastDeckUI();
 
         let activeTool = -1;
-        const postgearOn = (status["filament_switch_sensor toolhead_postgear"]?.filament_detected) ??
+        const postgearOn = (status[SENSOR_POSTGEAR]?.filament_detected) ??
                            (mmuCache.sensors ? mmuCache.sensors.toolhead : false);
         if (mmuCache.tool !== undefined && mmuCache.tool >= 0 && (postgearOn || mmuCache.filament_pos >= 6)) {
           activeTool = mmuCache.tool;
@@ -3880,7 +3956,7 @@
                     Unload Lane
                   </button>
                   <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-top:6px;">
-                    <button class="btn btn-danger" onclick="executeMacro('unload', `${idx}`)">Eject Lane</button>
+                    <button class="btn btn-danger" onclick="executeMacro('unload', ${idx})">Eject Lane</button>
                     <button class="btn btn-danger" onclick="executeGcode('ACE_LANE_EJECT T=${idx} FORCE=1')">Force Eject</button>
                   </div>
                 `;
@@ -3916,7 +3992,7 @@
                       <svg class="spinning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
                       ${isPreload ? 'Preloading...' : 'Feeding...'}
                     </button>
-                    <button class="btn btn-danger" onclick="executeMacro('unload', `${idx}`)">Stop / Eject</button>
+                    <button class="btn btn-danger" onclick="executeMacro('unload', ${idx})">Stop / Eject</button>
                   `;
                 }
               } else if (isUnwinding) {
@@ -3942,7 +4018,7 @@
                 if (actionsEl) {
                   actionsEl.innerHTML = `
                     <button class="btn" style="opacity:0.8; pointer-events:none; background:rgba(244,63,94,0.15); color:#fb7185; border-color:rgba(244,63,94,0.3);">Retracting...</button>
-                    <button class="btn btn-danger" onclick="executeMacro('unload', `${idx}`)">Eject</button>
+                    <button class="btn btn-danger" onclick="executeMacro('unload', ${idx})">Eject</button>
                   `;
                 }
               } else {
@@ -3962,12 +4038,12 @@
                 if (actionsEl) {
                   actionsEl.innerHTML = `
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
-                      <button class="btn btn-primary" onclick="executeMacro('load', `${idx}`)">Select Lane</button>
+                      <button class="btn btn-primary" onclick="executeMacro('load', ${idx})">Select Lane</button>
                       <button class="btn btn-warning" onclick="executeGcode('ACE_DEBUG_SET_CURRENT_INDEX TOOL=${idx}')" title="Force ownership of the toolhead to this lane if state gets desynchronized">Claim Loaded</button>
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px; margin-top:6px;">
                       <button class="btn" onclick="parkLaneAtHub(${idx})" style="background:rgba(99,102,241,0.15); border-color:rgba(99,102,241,0.35); color:#a5b4fc; font-size:10px; padding:6px 2px;" title="Feed T${idx} to 4-to-1 Hub sensor and back off 50mm to establish safe park datum (ACE_LANE_NORMALIZE)">Park at Hub</button>
-                      <button class="btn btn-danger" style="font-size:10px; padding:6px 2px;" onclick="executeMacro('unload', `${idx}`)">Eject</button>
+                      <button class="btn btn-danger" style="font-size:10px; padding:6px 2px;" onclick="executeMacro('unload', ${idx})">Eject</button>
                       <button class="btn btn-danger" style="font-size:10px; padding:6px 2px;" onclick="executeGcode('ACE_LANE_EJECT T=${idx} FORCE=1')">Force Eject</button>
                     </div>
                   `;
@@ -3981,36 +4057,27 @@
         }
       }
 
-      if (status["filament_switch_sensor toolhead_entry"]?.filament_detected !== undefined) {
-        const det = status["filament_switch_sensor toolhead_entry"].filament_detected;
-        const elVal = document.getElementById("sensorEntry");
-        const pill = document.getElementById("pillEntry");
-        if (elVal) elVal.innerText = det ? "DETECTED" : "OPEN";
-        if (pill) {
-          pill.classList.toggle("active", !!det);
+      
+      function updateSensorPill(sensorName, pillId, valId, trueText, falseText) {
+        if (!sensorName || sensorName.toLowerCase() === "none") return;
+        if (status[sensorName] && status[sensorName].filament_detected !== undefined) {
+          const det = status[sensorName].filament_detected;
+          const elVal = document.getElementById(valId);
+          const pill = document.getElementById(pillId);
+          if (elVal) elVal.innerText = det ? trueText : falseText;
+          if (pill) {
+            pill.classList.toggle("active", !!det);
+          }
+          refreshLaneTracks();
         }
-        refreshLaneTracks();
       }
-      if (status["filament_switch_sensor toolhead_postgear"]?.filament_detected !== undefined) {
-        const det = status["filament_switch_sensor toolhead_postgear"].filament_detected;
-        const elVal = document.getElementById("sensorPostgear");
-        const pill = document.getElementById("pillPostgear");
-        if (elVal) elVal.innerText = det ? "GRIPPED" : "EMPTY";
-        if (pill) {
-          pill.classList.toggle("active", !!det);
-        }
-        refreshLaneTracks();
-      }
-      if (status["filament_switch_sensor hub_detect"]?.filament_detected !== undefined) {
-        const det = status["filament_switch_sensor hub_detect"].filament_detected;
-        const elVal = document.getElementById("sensorHub");
-        const pill = document.getElementById("pillHub");
-        if (elVal) elVal.innerText = det ? "DETECTED" : "CLEAR";
-        if (pill) {
-          pill.classList.toggle("active", !!det);
-        }
-        refreshLaneTracks();
-      }
+
+      updateSensorPill(SENSOR_ENTRY, "pillEntry", "sensorEntry", "DETECTED", "OPEN");
+      updateSensorPill(SENSOR_POSTGEAR, "pillPostgear", "sensorPostgear", "GRIPPED", "EMPTY");
+      updateSensorPill(SENSOR_HUB, "pillHub", "sensorHub", "DETECTED", "CLEAR");
+
+      
+      
     }
 
         function executeMacro(type, idx) {
