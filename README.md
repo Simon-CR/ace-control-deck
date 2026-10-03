@@ -76,24 +76,35 @@ flowchart LR
 
 ### 5. Kinematics-Agnostic Customizable Macro Templates
 - Decoupled from specific printer models. Easily adaptable to **Voron Trident / 2.4**, **Snapmaker U1**, **Creality K1**, **RatRig**, or custom CoreXY/bedslinger architectures.
-- Fully configurable macro strings for Load, Unload, Purge, and Nozzle Wipe in the built-in Settings Modal.
+- Fully configurable macro strings for Load, Unload, Purge, and Nozzle Wipe in the built-in Settings Modal, featuring dynamic placeholder substitution:
+
+| Template Variable | Default Command | Dynamic Placeholders | UI Trigger Action |
+|---|---|---|---|
+| `MACRO_LOAD` | `ACE_LOAD SLOT={slot}` | `{slot}`, `{lane}`, `{tool}` (0–3) | Slot Card "Select Lane" |
+| `MACRO_UNLOAD` | `ACE_UNLOAD SLOT={slot}` | `{slot}`, `{lane}`, `{tool}` (0–3) | Slot Card "Eject" / "Stop" |
+| `MACRO_PURGE` | `PURGE` | *(static command)* | Utility Dock "Purge" |
+| `MACRO_WIPE` | `CLEAN_NOZZLE` | *(static command)* | Utility Dock "Wipe Nozzle" |
 
 ---
 
-## Hardware Sensor Topology Tiers
+## Macro Architecture & Sensor Topology Tiers
 
-The ACE Control Deck adapts its visual representation, safety guards, and telemetry feed based on your machine's physical sensor topology:
+ACE Control Deck adapts its visual representation, safety interlocks, and telemetry feed based on your machine's physical sensor topology. For the complete command inventory (~25 commands) and deep architectural mechanics, consult the authoritative [**docs/MACROS_AND_TIERS.md**](docs/MACROS_AND_TIERS.md) guide. Reference macro configurations are provided in [`config/ace_deck_macros_sample.cfg`](config/ace_deck_macros_sample.cfg).
 
-| Tier | Name | Sensor Architecture | Capabilities & Trade-Offs |
-|:---:|---|---|---|
-| **Tier 1** | **Minimal** | **1 Hub Sensor**<br/>(`hub_detect` / merger detect) | **Baseline Requirement**. Allows parking filament outside the 4-to-1 junction for `ACE_LANE_NORMALIZE` and prevents merge collisions. Feeding past the hub into the toolhead is timed/blind. |
-| **Tier 2** | **Standard** | **1 Hub Sensor** +<br/>**1 Toolhead Entry Sensor**<br/>(`toolhead_entry`) | **Recommended Baseline**. Bowden transit runs at full rapid velocity (85–90 mm/s) and stops immediately upon triggering toolhead entry. Eliminates tube fractures and catches Bowden runouts. |
-| **Tier 3** | **High-Reliability**<br/>*(Voron Trident)* | **1 Hub Sensor** +<br/>**2 Toolhead Sensors**<br/>(`toolhead_entry` + `toolhead_postgear`) | **Maximum Reliability / 100% Ground Truth**. Postgear sensor provides verified extruder gear bite confirmation, serves as a cut witness for mechanical cutters (e.g. CROSSBOW), and provides cold-park boundaries. |
+### Sensor Tier Comparison & Macro Behavior
+
+| Tier | Sensor Architecture | Feeding Behavior | Extruder Bite & Toolchange | Runout & Tip Handling |
+|:---:|---|---|---|---|
+| **Tier 1**<br/>*Minimal* | **1 Hub Sensor**<br/>(`hub_detect`) | **Timed / Blind**. 50mm pre-hub park datum; blind timed push past merger into toolhead. | Unverified gear engagement; longer toolchange cycle (65–90s). | Hub switch runout (~600mm wasted); thermal tip shaping only. |
+| **Tier 2**<br/>*Standard* | **1 Hub Sensor** +<br/>**1 Entry Sensor**<br/>(`toolhead_entry`) | **Gated Rapid**. High-speed Bowden transit (85–90 mm/s) stopped dynamically by entry switch. | Sensor confirms arrival at toolhead collet; blind bite into gears. | Entry switch runout (~100mm wasted); thermal shaping or blind cut. |
+| **Tier 3**<br/>*High-Reliability*<br/>*(Voron Trident)* | **1 Hub Sensor** +<br/>**2 Toolhead Sensors**<br/>(`toolhead_entry` + `toolhead_postgear`) | **Multi-Stage Ground Truth**. 90 mm/s bulk $\rightarrow$ 30 mm/s funnel $\rightarrow$ 85 mm/s Bowden $\rightarrow$ 15 mm/s bite. | **Verified Bite**. Extruder runs synchronously at 15 mm/s until postgear trips. Sub-35s toolchange. | **Zero-Waste Runout**. Postgear cut witness verifies mechanical blade cut (CROSSBOW). |
 
 > [!IMPORTANT]
 > **Physical Hardware Invariant**: Anycubic ACE 2 Pro **strictly requires at least Tier 1 (Hub Sensor)**. Without a hub switch, multiple lanes cannot reliably park clear of the 4-to-1 merger, resulting in catastrophic filament collisions inside the junction block.
 
-For an in-depth mechanical and electrical guide on deploying Tier 3 on a Voron CoreXY printer, see [**docs/MULTIACE_ON_VORON_TRIDENT.md**](docs/MULTIACE_ON_VORON_TRIDENT.md).
+- Detailed Macro & Tier Architecture Guide: [**docs/MACROS_AND_TIERS.md**](docs/MACROS_AND_TIERS.md)
+- Voron Trident 300 Integration Guide: [**docs/MULTIACE_ON_VORON_TRIDENT.md**](docs/MULTIACE_ON_VORON_TRIDENT.md)
+- Reference Klipper Configuration: [`config/ace_deck_macros_sample.cfg`](config/ace_deck_macros_sample.cfg)
 
 ---
 

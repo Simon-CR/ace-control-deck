@@ -260,4 +260,4 @@ gcode:
     {% endif %}
 ```
 
-For full reference macro definitions, see [`config/ace_deck_macros_sample.cfg`](../config/ace_deck_macros_sample.cfg).
+For full command inventory, template placeholders, and multi-tier macro details, consult the authoritative [**docs/MACROS_AND_TIERS.md**](MACROS_AND_TIERS.md) guide. Complete reference macro implementations are provided in [`config/ace_deck_macros_sample.cfg`](../config/ace_deck_macros_sample.cfg).

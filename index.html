@@ -1490,13 +1490,13 @@
       <input type="text" id="postgearSensorInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="filament_switch_sensor toolhead_postgear" />
 
       <h4 style="margin-bottom:12px; margin-top:20px; font-size:14px; color:var(--text-main);">Action Templates</h4>
-      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">Use <code>{slot}</code> to inject the lane number (0-3).</p>
+      <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">Tokens <code>{slot}</code>, <code>{lane}</code>, or <code>{tool}</code> are dynamically replaced with the 0-indexed lane number (0–3).</p>
       
       <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Load Command Template</label>
-      <input type="text" id="loadTemplateInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="ACE_LOAD SLOT={slot}" />
+      <input type="text" id="loadTemplateInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="ACE_LOAD SLOT={slot} (or LANE={lane} / TOOL={tool})" />
       
       <label style="display:block; margin-bottom:8px; font-size:12px; color:var(--text-muted); font-weight:600;">Unload Command Template</label>
-      <input type="text" id="unloadTemplateInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="ACE_UNLOAD SLOT={slot}" />
+      <input type="text" id="unloadTemplateInput" style="width:100%; padding:10px; background:rgba(0,0,0,0.2); border:1px solid var(--bg-card-border); color:#fff; border-radius:var(--radius-sm); font-family:var(--font-mono); margin-bottom:16px;" placeholder="ACE_UNLOAD SLOT={slot} (or LANE={lane} / TOOL={tool})" />
       
       <h4 style="margin-bottom:12px; margin-top:20px; font-size:14px; color:var(--text-main);">Auxiliary Actions</h4>
       <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px; line-height:1.4;">Provide macro names to display extra buttons. Must exist in Klipper.</p>
@@ -4082,9 +4082,9 @@
 
         function executeMacro(type, idx) {
       if (type === 'load') {
-        executeGcode(MACRO_LOAD.replace(/{slot}/g, idx));
+        executeGcode(MACRO_LOAD.replace(/\{(?:slot|lane|tool)\}/gi, idx));
       } else if (type === 'unload') {
-        executeGcode(MACRO_UNLOAD.replace(/{slot}/g, idx));
+        executeGcode(MACRO_UNLOAD.replace(/\{(?:slot|lane|tool)\}/gi, idx));
       } else if (type === 'purge') {
         executeGcode(MACRO_PURGE);
       } else if (type === 'wipe') {
