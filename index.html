@@ -2105,6 +2105,13 @@
     let SENSOR_HUB = localStorage.getItem('sensor_hub') || "filament_switch_sensor hub_detect";
     let SENSOR_ENTRY = localStorage.getItem('sensor_entry') || "filament_switch_sensor toolhead_entry";
     let SENSOR_POSTGEAR = localStorage.getItem('sensor_postgear') || "filament_switch_sensor toolhead_postgear";
+    let IS_SNAPMAKER_U1 = false;
+    const U1_MOTION_SENSORS = [
+      "filament_motion_sensor e0_filament",
+      "filament_motion_sensor e1_filament",
+      "filament_motion_sensor e2_filament",
+      "filament_motion_sensor e3_filament"
+    ];
 
     let MACRO_LOAD = localStorage.getItem('macro_load') || "ACE_LOAD SLOT={slot}";
     let MACRO_UNLOAD = localStorage.getItem('macro_unload') || "ACE_UNLOAD SLOT={slot}";
@@ -2620,6 +2627,55 @@
       }, 10000);
     }
 
+    function initSensors(availableObjects) {
+      if (!availableObjects) {
+        fetch(`${API_BASE}/printer/objects/list`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.result && Array.isArray(data.result.objects)) {
+              initSensors(data.result.objects);
+            }
+          })
+          .catch(e => console.warn("[Sensors] Failed to query printer objects list:", e));
+        return;
+      }
+
+      const objects = availableObjects;
+      const hasDefaultEntry = objects.includes(SENSOR_ENTRY) || objects.includes("filament_switch_sensor toolhead_entry");
+      const u1Found = U1_MOTION_SENSORS.filter(s => objects.includes(s));
+
+      if (!hasDefaultEntry && u1Found.length > 0) {
+        IS_SNAPMAKER_U1 = true;
+        log(`[Sensors] Snapmaker U1 motion sensor topology detected (${u1Found.length}/4 sensors)`, "info");
+
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          let u1Sub = {};
+          u1Found.forEach(s => u1Sub[s] = null);
+          ws.send(JSON.stringify({
+            jsonrpc: "2.0",
+            method: "printer.objects.subscribe",
+            params: { objects: u1Sub },
+            id: ++reqId
+          }));
+        }
+
+        let queryStr = u1Found.map(encodeURIComponent).join("&");
+        fetch(`${API_BASE}/printer/objects/query?${queryStr}`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.result?.status) handleStatusUpdate(d.result.status);
+          })
+          .catch(e => console.warn("[Sensors] U1 sensor initial query failed:", e));
+
+        const pillEntry = document.getElementById("pillEntry");
+        if (pillEntry) {
+          pillEntry.title = "Snapmaker U1 Toolhead Motion Sensors (e0–e3)";
+        }
+      } else {
+        IS_SNAPMAKER_U1 = false;
+      }
+    }
+
     function connectMoonraker() {
       ws = new WebSocket(WS_URL);
 
@@ -2653,8 +2709,11 @@
           id: ++reqId
         }));
 
+        // Probe sensor topology (auto-discover Snapmaker U1 if toolhead_entry absent)
+        initSensors();
+
         // Immediate query
-                let queryItems = ["ace", "ace_instance_0", "mmu", "save_variables"];
+        let queryItems = ["ace", "ace_instance_0", "mmu", "save_variables"];
         if (SENSOR_HUB && SENSOR_HUB.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_HUB));
         if (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_ENTRY));
         if (SENSOR_POSTGEAR && SENSOR_POSTGEAR.toLowerCase() !== "none") queryItems.push(encodeURIComponent(SENSOR_POSTGEAR));
@@ -3012,7 +3071,9 @@
 
       
       let hasHub = (SENSOR_HUB && SENSOR_HUB.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_HUB] !== undefined);
-      let hasEntry = (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_ENTRY] !== undefined);
+      let hasEntry = IS_SNAPMAKER_U1
+        ? U1_MOTION_SENSORS.some(s => lastStatusCache && lastStatusCache[s] !== undefined)
+        : (SENSOR_ENTRY && SENSOR_ENTRY.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_ENTRY] !== undefined);
       let hasPostgear = (SENSOR_POSTGEAR && SENSOR_POSTGEAR.toLowerCase() !== 'none' && lastStatusCache && lastStatusCache[SENSOR_POSTGEAR] !== undefined);
 
       let isHubEnabled = SENSOR_TOPOLOGY === 'auto' ? hasHub : (SENSOR_TOPOLOGY !== 'none'); 
@@ -3051,7 +3112,12 @@
 
       if (isLoaded) {
         const postgearOn = isPostgearEnabled ? Boolean(lastStatusCache[SENSOR_POSTGEAR]?.filament_detected) : false;
-        const entryOn = isEntryEnabled ? Boolean(lastStatusCache[SENSOR_ENTRY]?.filament_detected) : false;
+        let entryOn = false;
+        if (IS_SNAPMAKER_U1) {
+          entryOn = Boolean(lastStatusCache[`filament_motion_sensor e${idx}_filament`]?.filament_detected);
+        } else {
+          entryOn = isEntryEnabled ? Boolean(lastStatusCache[SENSOR_ENTRY]?.filament_detected) : false;
+        }
         strand.classList.remove("active-sweep");
         strand.style.transition = "width 0.4s ease";
 
@@ -4059,6 +4125,35 @@
 
       
       function updateSensorPill(sensorName, pillId, valId, trueText, falseText) {
+        if (IS_SNAPMAKER_U1 && pillId === "pillEntry") {
+          let activeTool = (lastStatusCache?.ace?.current_index >= 0) ? lastStatusCache.ace.current_index : 0;
+          let u1Sensor = `filament_motion_sensor e${activeTool}_filament`;
+          let det = false;
+          let found = false;
+          if (status[u1Sensor] && status[u1Sensor].filament_detected !== undefined) {
+            det = Boolean(status[u1Sensor].filament_detected);
+            found = true;
+          } else {
+            for (let i = 0; i < 4; i++) {
+              let sName = `filament_motion_sensor e${i}_filament`;
+              if (status[sName]?.filament_detected !== undefined) {
+                found = true;
+                if (status[sName].filament_detected) {
+                  det = true;
+                  break;
+                }
+              }
+            }
+          }
+          if (found) {
+            const elVal = document.getElementById(valId);
+            const pill = document.getElementById(pillId);
+            if (elVal) elVal.innerText = det ? trueText : falseText;
+            if (pill) pill.classList.toggle("active", !!det);
+            refreshLaneTracks();
+            return;
+          }
+        }
         if (!sensorName || sensorName.toLowerCase() === "none") return;
         if (status[sensorName] && status[sensorName].filament_detected !== undefined) {
           const det = status[sensorName].filament_detected;
