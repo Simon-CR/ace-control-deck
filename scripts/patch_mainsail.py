@@ -39,8 +39,21 @@ def get_sites():
 def restore_panel(site):
     """Put the custom iframe panel back; an update deletes it."""
     status = []
+
+    # Clean up legacy $site/ace/index.html if it exists from previous installations
+    legacy_ace = os.path.join(site, "ace")
+    legacy_dest = os.path.join(legacy_ace, "index.html")
+    if os.path.exists(legacy_dest):
+        try:
+            os.remove(legacy_dest)
+            if os.path.isdir(legacy_ace) and not os.listdir(legacy_ace):
+                os.rmdir(legacy_ace)
+            status.append("legacy /ace cleaned")
+        except Exception as e:
+            status.append("legacy /ace cleanup warning: %s" % e)
+
     if os.path.exists(PANEL_SRC):
-        dest_dir = os.path.join(site, "ace")
+        dest_dir = os.path.join(site, "acedeck")
         dest = os.path.join(dest_dir, "index.html")
         same = False
         if os.path.exists(dest):
@@ -49,11 +62,11 @@ def restore_panel(site):
         if not same:
             os.makedirs(dest_dir, exist_ok=True)
             shutil.copy(PANEL_SRC, dest)
-            status.append("ace restored")
+            status.append("acedeck restored")
         else:
-            status.append("ace current")
+            status.append("acedeck current")
     else:
-        status.append("no ace src")
+        status.append("no acedeck src")
 
     return ", ".join(status)
 
@@ -121,10 +134,10 @@ def patch_route(site):
             continue
 
         if "name:`acedeck`" in s or 'name:"acedeck"' in s:
-            current_v = "/ace/index.html?v=" + ver
+            current_v = "/acedeck/index.html?v=" + ver
             if current_v in s:
                 return path, "route already present and current"
-            s = re.sub(r'/ace/index\.html\?v=[^`"]*', current_v, s)
+            s = re.sub(r'/(?:ace|acedeck)/index\.html\?v=[^`"]*', current_v, s)
             with io.open(path, "w", encoding="utf-8", newline="") as f:
                 f.write(s)
             return path, "route version updated"
@@ -132,7 +145,7 @@ def patch_route(site):
         if not os.path.exists(path + ".preace"):
             shutil.copy(path, path + ".preace")
 
-        ace_comp_def = 'AceDeckComp=W({},function(){var e=this,t=e._self._c;return e._self._setupProxy,t(`div`,{staticClass:`fill-height`,style:{width:`100%`,height:`calc(100vh - 36px)`,position:`relative`,overflow:`hidden`}},[t(`iframe`,{attrs:{src:`/ace/index.html?v=' + ver + '`},style:{width:`100%`,height:`100%`,border:`none`,display:`block`/* iframe */}})])},[],!1,null,null,null,null).exports,'
+        ace_comp_def = 'AceDeckComp=W({},function(){var e=this,t=e._self._c;return e._self._setupProxy,t(`div`,{staticClass:`fill-height`,style:{width:`100%`,height:`calc(100vh - 36px)`,position:`relative`,overflow:`hidden`}},[t(`iframe`,{attrs:{src:`/acedeck/index.html?v=' + ver + '`},style:{width:`100%`,height:`100%`,border:`none`,display:`block`/* iframe */}})])},[],!1,null,null,null,null).exports,'
         route_str = '{name:`acedeck`,title:`ACE Deck`,path:`/acedeck`,icon:kr,component:AceDeckComp,alwaysShow:!0,showInNavi:!0,position:35},'
         dj_pos = s.find("dj=[")
         if dj_pos != -1:

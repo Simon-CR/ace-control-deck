@@ -43,6 +43,16 @@ flowchart LR
 - **Klipper & Moonraker**: Dispatches motion primitives and broadcasts printer state objects (`printer["ace"]`, `filament_switch_sensor`, `save_variables`).
 - **ACE Control Deck**: Visualizes strand traversal, animates rotisserie drying cycles, performs rolling P95 Bowden calibrations, and dispatches kinematics-safe macros.
 
+### Parallel Coexistence with multiACE Light Web UI
+
+`multiACE` includes an optional lightweight FastAPI web interface primarily intended for low-level backend diagnostics and headless verification, served on port **7126** (under `/multiace/`). 
+
+In contrast, **ACE Control Deck** is the full-featured, rich graphical command deck and real-time visualizer served via Moonraker on port **7125** (e.g. `/acedeck/` or `/ace_deck/index.html`).
+
+- **Zero Port Conflicts**: `multiACE` operates on port `7126`, while ACE Control Deck utilizes Moonraker's standard port `7125`.
+- **Zero File Overlaps**: Neither interface touches or overwrites the other's static assets, scripts, or templates.
+- **Zero Route Collisions**: Both web frontends run concurrently and can be opened side-by-side on desktop or mobile screens with zero state interference.
+
 ---
 
 ## Key Features
@@ -104,7 +114,26 @@ ACE Control Deck adapts its visual representation, safety interlocks, and teleme
 
 - Detailed Macro & Tier Architecture Guide: [**docs/MACROS_AND_TIERS.md**](docs/MACROS_AND_TIERS.md)
 - Voron Trident 300 Integration Guide: [**docs/MULTIACE_ON_VORON_TRIDENT.md**](docs/MULTIACE_ON_VORON_TRIDENT.md)
+- Snapmaker U1 Platform Guide: [**docs/SNAPMAKER_U1_GUIDE.md**](docs/SNAPMAKER_U1_GUIDE.md)
 - Reference Klipper Configuration: [`config/ace_deck_macros_sample.cfg`](config/ace_deck_macros_sample.cfg)
+
+---
+
+## Cross-Platform Support: Voron Trident vs. Snapmaker U1
+
+ACE Control Deck and `multiACE` are engineered to seamlessly support both single-hotend toolhead combiners and multi-toolhead toolchangers:
+
+| Architectural Dimension | Voron Trident 300 (Single-Toolhead Combiner) | Snapmaker U1 (Multi-Toolhead Toolchanger) |
+|---|---|---|
+| **Hotends / Extruders** | 1 single shared hotend & dual-drive extruder | **4 independent physical toolheads** (`T0`–`T3`), each with dedicated heater, nozzle, and extruder |
+| **Path Topology** | 4-to-1 merger hub $\rightarrow$ shared 555.9mm reverse Bowden | **Head Mode (1:1 Direct Lines)**: 4 independent ~2100mm lines (or Combiner Mode) |
+| **Toolchange Mechanism** | Tip cut (CROSSBOW), retract past hub, feed new lane, purge | **Carriage Docking / Undocking**: Carriage docks inactive head, picks up active head |
+| **Purge / Waste Volume** | 45–80mm color flush / purge tower | **Near Zero**: No filament flush required between tool changes |
+| **Toolhead Sensors** | Microswitches (`toolhead_entry` + `toolhead_postgear`) | Optical/rotary motion sensors (`filament_motion_sensor e{n}_filament`) |
+| **Tip Management** | Mechanical blade cut (CROSSBOW) | **Anti-Ooze Retraction** inside nozzle; hot seat press (`seat_overshoot_length`) |
+
+- **Voron Trident Integration**: See [**docs/MULTIACE_ON_VORON_TRIDENT.md**](docs/MULTIACE_ON_VORON_TRIDENT.md) for reverse Bowden geometry, CAN toolhead pinouts (BTT EBB36 v1.2), multi-stage feeding profiles, and CROSSBOW tip-cutting shims.
+- **Snapmaker U1 Integration**: See [**docs/SNAPMAKER_U1_GUIDE.md**](docs/SNAPMAKER_U1_GUIDE.md) for custom firmware setup, 1:1 Head Mode vs. Combiner Mode, `e{n}_filament` motion sensors, and tool docking shims.
 
 ---
 
@@ -176,7 +205,7 @@ Integrate ACE Control Deck directly into the Mainsail navigation sidebar as a na
    ```
    *(If Mainsail is located in a custom path, pass `--mainsail-path ~/custom_mainsail_path`)*
 3. The script automatically:
-   - Copies `index.html` into Mainsail's web root (`~/mainsail/ace/index.html`).
+   - Copies `index.html` into Mainsail's web root (`~/mainsail/acedeck/index.html`).
    - Injects the `/acedeck` route and sidebar icon into Mainsail's compiled bundle.
    - Bumps Mainsail's Service Worker cache (`sw.js`) so your browser immediately displays the new tab.
 4. Hard-refresh your browser (`Ctrl+Shift+R` or `Cmd+Shift+R`). You will see **ACE Deck** in the sidebar.
